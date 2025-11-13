@@ -1,0 +1,60 @@
+# Windows system files
+NTUSER.DAT*
+ntuser.*
+*.LOG*
+*.regtrans-ms
+*.blf
+*.ini
+Application Data/
+Cookies/
+Local Settings/
+My Documents/
+NetHood/
+PrintHood/
+Recent/
+SendTo/
+Templates/
+시작 메뉴/
+
+# Personal directories
+AppData/
+Contacts/
+Desktop/
+Documents/
+Downloads/
+Favorites/
+Links/
+Music/
+Pictures/
+Saved Games/
+Searches/
+Videos/
+OneDrive/
+
+# IDE and development tools
+.cache/
+.cursor/
+.eclipse/
+.idlerc/
+.keras/
+.node_repl_history
+.p2/
+.rest-client/
+.ssh/
+.vscode/
+eclipse/
+eclipse-workspace/
+
+# Personal files
+*.log
+*.sql
+compat-app/
+my-chat/
+ansel/
+
+# Only track the project folder
+# Everything else is ignored by default
+/*
+!2025__project-main/
+!.gitignore
+
