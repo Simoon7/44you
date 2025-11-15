@@ -18,6 +18,7 @@ const Post = require('./models/Post');
 const Comment = require('./models/Comment');
 const ChatRoom = require('./models/ChatRoom');
 const Message = require('./models/Message');
+const Compatibility = require('./models/Compatibility');
 
 // 모델 관계 설정
 Comment.belongsTo(User, { foreignKey: 'userId', as: 'author' });
@@ -38,6 +39,12 @@ ChatRoom.hasMany(Message, { foreignKey: 'chatroomId' });
 // Message와 User 관계 설정
 Message.belongsTo(User, { foreignKey: 'userId', as: 'sender' });
 User.hasMany(Message, { foreignKey: 'userId' });
+
+// Compatibility와 User 관계 설정
+Compatibility.belongsTo(User, { foreignKey: 'user1Id', as: 'user1' });
+Compatibility.belongsTo(User, { foreignKey: 'user2Id', as: 'user2' });
+User.hasMany(Compatibility, { foreignKey: 'user1Id', as: 'compatibilitiesAsUser1' });
+User.hasMany(Compatibility, { foreignKey: 'user2Id', as: 'compatibilitiesAsUser2' });
 
 // MySQL 연결 테스트
 sequelize.authenticate()
@@ -96,12 +103,14 @@ const authRoutes = require('./routes/auth');
 const mainRoutes = require('./routes/main');
 const communityRoutes = require('./routes/community');
 const chatRoutes = require('./routes/chat');
+const matchingRoutes = require('./routes/matching');
 
 // 라우트 사용
 app.use('/auth', authRoutes);
 app.use('/', mainRoutes);
 app.use('/community', communityRoutes);
 app.use('/chat', chatRoutes);
+app.use('/matching', matchingRoutes);
 
 // Socket.io 연결 처리
 

@@ -39,11 +39,15 @@
               <% } %>
               
               <div class="matching-score">
-                <p><strong>궁합점수:</strong> <span class="score"><%= Math.round(user.matchingScore * 10) / 10 %>/100</span></p>
+                <% if (user.matchingScore > 0) { %>
+                  <p><strong>궁합점수:</strong> <span class="score"><%= Math.round(user.matchingScore * 10) / 10 %>/100</span></p>
+                <% } else { %>
+                  <p><strong>궁합점수:</strong> <span class="score" style="color: #999;">미계산</span></p>
+                <% } %>
               </div>
               
               <div class="user-actions">
-                <a href="/chat/rooms/<%= user.id %>" class="btn btn-sm btn-primary">메시지</a>
+                <a href="/chat/room/<%= user.id %>" class="btn btn-sm btn-primary">메시지</a>
                 <button class="btn btn-sm btn-secondary" onclick="calculateCompatibility(<%= currentUser.id %>, <%= user.id %>)">궁합 보기</button>
               </div>
             </div>

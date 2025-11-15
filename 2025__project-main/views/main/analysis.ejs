@@ -10,9 +10,10 @@
         <label for="gender" class="form-label">성별</label>
         <select id="gender" name="gender" class="form-control" required>
           <option value="">선택하세요</option>
-          <option value="M">남자</option>
-          <option value="F">여자</option>
+          <option value="남">남자</option>
+          <option value="여">여자</option>
         </select>
+        <small style="color: #666; font-size: 0.9em; display: block; margin-top: 5px;">남, 여, M, F, m, f 중 입력 가능</small>
       </div>
 
       <div class="form-group">
@@ -23,10 +24,11 @@
           name="year" 
           class="form-control" 
           placeholder="예: 2001"
-          min="1900"
-          max="2099"
+          min="2000"
+          max="2010"
           required
         >
+        <small style="color: #666; font-size: 0.9em; display: block; margin-top: 5px;">연도는 2000~2010년만 입력 가능합니다</small>
       </div>
 
       <div class="form-group">

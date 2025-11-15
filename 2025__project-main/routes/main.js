@@ -56,33 +56,51 @@ router.post('/analysis', async (req, res) => {
       });
     }
 
+    // 성별 검증 (남, 여, M, F, m, f 허용)
+    const validGenders = ['남', '여', 'M', 'F', 'm', 'f', 'male', 'female'];
+    const normalizedGender = gender.trim();
+    if (!validGenders.includes(normalizedGender)) {
+      return res.status(400).json({
+        success: false,
+        message: '올바른 성별을 입력해주세요. (남, 여, M, F, m, f)'
+      });
+    }
+
     // 입력값 범위 검증
     const parsedYear = parseInt(year);
     const parsedMonth = parseInt(month);
     const parsedDay = parseInt(day);
 
-    if (parsedYear < 1900 || parsedYear > 2099) {
+    if (isNaN(parsedYear) || parsedYear < 2000 || parsedYear > 2010) {
       return res.status(400).json({
         success: false,
-        message: '올바른 연도를 입력해주세요. (1900~2099)'
+        message: '올바른 연도를 입력해주세요. (2000~2010)'
       });
     }
 
-    if (parsedMonth < 1 || parsedMonth > 12) {
+    if (isNaN(parsedMonth) || parsedMonth < 1 || parsedMonth > 12) {
       return res.status(400).json({
         success: false,
         message: '올바른 월을 입력해주세요. (1~12)'
       });
     }
 
-    if (parsedDay < 1 || parsedDay > 31) {
+    if (isNaN(parsedDay) || parsedDay < 1 || parsedDay > 31) {
       return res.status(400).json({
         success: false,
         message: '올바른 일을 입력해주세요. (1~31)'
       });
     }
 
-    console.log('AWS API 요청 시작:', { gender, year: parsedYear, month: parsedMonth, day: parsedDay });
+    // 성별 정규화 (남/여로 통일)
+    let normalizedGenderValue = normalizedGender;
+    if (normalizedGender === 'M' || normalizedGender === 'm' || normalizedGender === 'male') {
+      normalizedGenderValue = '남';
+    } else if (normalizedGender === 'F' || normalizedGender === 'f' || normalizedGender === 'female') {
+      normalizedGenderValue = '여';
+    }
+
+    console.log('AWS API 요청 시작:', { gender: normalizedGenderValue, year: parsedYear, month: parsedMonth, day: parsedDay });
 
     // AWS 서버에 요청 (타임아웃 설정: 10초)
     const controller = new AbortController();
@@ -95,7 +113,7 @@ router.post('/analysis', async (req, res) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           p: { 
-            gender: gender === 'M' || gender === '남' ? '남' : '여', 
+            gender: normalizedGenderValue, 
             year: parsedYear, 
             month: parsedMonth, 
             day: parsedDay 

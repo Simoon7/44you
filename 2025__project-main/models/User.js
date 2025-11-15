@@ -56,6 +56,36 @@ const User = sequelize.define('User', {
     type: DataTypes.TEXT,
     allowNull: true,
     comment: 'JSON 형식의 성향 데이터 (예: ["강함", "용감", "충동", "변화"])'
+  },
+  yearSky: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    comment: '년간 천간 (ys)'
+  },
+  yearEarth: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    comment: '년간 지지 (ye)'
+  },
+  monthSky: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    comment: '월간 천간 (ms)'
+  },
+  monthEarth: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    comment: '월간 지지 (me)'
+  },
+  daySky: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    comment: '일간 천간'
+  },
+  dayEarth: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    comment: '일간 지지'
   }
 }, {
   tableName: 'users',

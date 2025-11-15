@@ -14,7 +14,7 @@
             <label for="birthYear">년도</label>
             <input type="number" id="birthYear" name="birthYear" 
                    value="<%= user.birthYear || '' %>" 
-                   placeholder="예: 1995" min="1900" max="2025" required>
+                   placeholder="예: 2000" min="2000" max="2010" required>
           </div>
           
           <div class="form-group">
@@ -36,10 +36,10 @@
           <label for="gender">성별</label>
           <select id="gender" name="gender" required>
             <option value="">선택하세요</option>
-            <option value="male" <%= user.gender === 'male' ? 'selected' : '' %>>남성</option>
-            <option value="female" <%= user.gender === 'female' ? 'selected' : '' %>>여성</option>
-            <option value="other" <%= user.gender === 'other' ? 'selected' : '' %>>기타</option>
+            <option value="남" <%= user.gender === '남' || user.gender === 'M' || user.gender === 'm' || user.gender === 'male' ? 'selected' : '' %>>남성</option>
+            <option value="여" <%= user.gender === '여' || user.gender === 'F' || user.gender === 'f' || user.gender === 'female' ? 'selected' : '' %>>여성</option>
           </select>
+          <small style="color: #666; font-size: 0.9em;">남, 여, M, F, m, f 중 입력 가능</small>
         </div>
         
         <% if (message) { %>
