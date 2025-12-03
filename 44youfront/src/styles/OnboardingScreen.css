@@ -1,0 +1,237 @@
+.onboarding-container {
+  position: fixed;
+  inset: 0;
+  background-color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.onboarding-mobile-wrapper {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  max-width: 700px;
+  padding: 0 10px;
+}
+
+.onboarding-screen {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  border-left: 2px solid #9ca3af;
+  border-right: 2px solid #9ca3af;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  background: linear-gradient(135deg, #6B46C1 0%, #9F7AEA 50%, #B794F4 100%);
+}
+
+.onboarding-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem 0.5rem;
+}
+
+.onboarding-header-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: white;
+}
+
+.onboarding-divider {
+  border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.onboarding-star {
+  position: absolute;
+  color: white;
+  pointer-events: none;
+}
+
+.onboarding-star-1 {
+  top: 5rem;
+  left: 2.5rem;
+  opacity: 0.4;
+  font-size: 1.25rem;
+}
+
+.onboarding-star-2 {
+  top: 8rem;
+  right: 4rem;
+  opacity: 0.3;
+  font-size: 0.875rem;
+}
+
+.onboarding-star-3 {
+  top: 25%;
+  left: 25%;
+  opacity: 0.2;
+  font-size: 1rem;
+}
+
+.onboarding-star-4 {
+  bottom: 33.333%;
+  right: 25%;
+  opacity: 0.3;
+  font-size: 1.125rem;
+}
+
+.onboarding-star-5 {
+  bottom: 5rem;
+  right: 3rem;
+  opacity: 0.5;
+  font-size: 2.25rem;
+}
+
+.onboarding-star-6 {
+  bottom: 8rem;
+  left: 5rem;
+  opacity: 0.25;
+  font-size: 0.875rem;
+}
+
+.onboarding-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 3rem 2rem;
+}
+
+.onboarding-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3rem;
+}
+
+.onboarding-icon-wrapper {
+  position: relative;
+}
+
+.onboarding-icon-bg {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 9999px;
+  filter: blur(2rem);
+  transform: scale(1.5);
+}
+
+.onboarding-icon-circle {
+  position: relative;
+  backdrop-filter: blur(8px);
+  border-radius: 9999px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  overflow: hidden;
+  width: 12rem;
+  height: 12rem;
+  background-color: white;
+}
+
+.onboarding-icon-image-wrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.onboarding-icon-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.onboarding-icon-star {
+  position: absolute;
+  color: white;
+  font-size: 0.875rem;
+}
+
+.onboarding-text-area {
+  text-align: center;
+}
+
+.onboarding-title {
+  color: white;
+  font-size: 1.875rem;
+  margin-bottom: 1rem;
+}
+
+.onboarding-description {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 1.125rem;
+}
+
+.onboarding-footer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.onboarding-progress {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.onboarding-progress-bar {
+  height: 0.5rem;
+  border-radius: 9999px;
+  transition: all 0.3s;
+  border: 2px solid white;
+}
+
+.onboarding-progress-bar.active {
+  width: 6rem;
+  background-color: white;
+}
+
+.onboarding-progress-bar.inactive {
+  width: 4rem;
+  background-color: transparent;
+}
+
+.onboarding-next-button {
+  width: 100%;
+  padding: 1rem;
+  border-radius: 9999px;
+  transition: all 0.3s;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  border: none;
+  font-size: 1rem;
+}
+
+.onboarding-next-button.enabled {
+  background-color: white;
+  color: #7B4EBF;
+}
+
+.onboarding-next-button.disabled {
+  background-color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.5);
+  cursor: not-allowed;
+}
+
+.onboarding-start-button {
+  width: 100%;
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 1rem;
+  border-radius: 9999px;
+  transition: all 0.3s;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  border: 2px solid white;
+  font-size: 1rem;
+}

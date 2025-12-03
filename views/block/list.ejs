@@ -1,0 +1,171 @@
+<%- include('../layout/header') %>
+
+<style>
+  body {
+    position: relative;
+    min-height: 100vh;
+  }
+
+  /* body::before는 공통 CSS의 별 레이어로 사용됨 */
+  /* body::after는 공통 CSS의 달로 사용됨 */
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--spacing-xl) var(--spacing-xl);
+  }
+</style>
+
+<div class="container">
+  <div class="card" style="max-width: 100%; margin-bottom: var(--spacing-xl);">
+    <div class="card-header" style="padding: var(--spacing-lg) var(--spacing-xl); border-bottom: 2px solid var(--border-color);">
+      <h2 style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin: 0 0 var(--spacing-sm) 0;">🚫 차단 목록</h2>
+      <p style="color: var(--text-primary); font-size: 16px; font-weight: 500; margin: 0;">차단한 사용자 목록입니다. 차단을 해제할 수 있습니다.</p>
+    </div>
+  </div>
+
+  <% if (blocks && blocks.length > 0) { %>
+    <div class="card">
+      <div class="card-header" style="padding: var(--spacing-lg) var(--spacing-xl); border-bottom: 2px solid var(--border-color);">
+        <h3 style="margin: 0; font-size: 18px; font-weight: 600; color: var(--text-primary);">차단된 사용자 (<%= blocks.length %>명)</h3>
+      </div>
+      
+      <div style="padding: var(--spacing-lg);">
+        <div style="display: flex; flex-direction: column; gap: var(--spacing-md);">
+          <% blocks.forEach(block => { %>
+            <div 
+              class="block-item" 
+              id="block-item-<%= block.id %>"
+              style="display: flex; justify-content: space-between; align-items: center; padding: var(--spacing-lg); border: 1px solid var(--border-color); border-radius: var(--border-radius); background: white; transition: all 0.2s ease;"
+              onmouseover="this.style.borderColor='var(--primary-color)'; this.style.boxShadow='0 4px 12px rgba(106, 90, 224, 0.15)'; this.style.transform='translateY(-2px)'"
+              onmouseout="this.style.borderColor='var(--border-color)'; this.style.boxShadow='none'; this.style.transform='translateY(0)'"
+            >
+              <div style="flex: 1;">
+                <h4 style="margin: 0 0 0.5rem 0; font-size: 16px; font-weight: 600; color: var(--text-primary);">
+                  <%= block.targetUser.nickname || block.targetUser.username %>
+                </h4>
+                <p style="margin: 0; color: var(--text-secondary); font-size: 14px;">
+                  차단일: <%= new Date(block.createdAt).toLocaleDateString('ko-KR', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  }) %>
+                </p>
+              </div>
+              
+              <button 
+                class="btn btn-outline" 
+                onclick="unblockUser(<%= block.targetId %>, '<%= block.targetUser.nickname || block.targetUser.username %>', <%= block.id %>)"
+                style="padding: 0.75rem 1.5rem; white-space: nowrap; font-weight: 600;"
+              >
+                차단 해제
+              </button>
+            </div>
+          <% }); %>
+        </div>
+      </div>
+    </div>
+  <% } else { %>
+    <div class="card">
+      <div class="card-body" style="text-align: center; padding: var(--spacing-3xl);">
+        <div class="empty-state-icon" style="font-size: 64px; margin-bottom: var(--spacing-lg);">✅</div>
+        <div class="empty-state-title" style="font-size: 20px; font-weight: 700; color: var(--text-primary); margin-bottom: var(--spacing-sm);">차단된 사용자가 없습니다</div>
+        <div class="empty-state-text" style="margin-bottom: var(--spacing-xl); line-height: 1.7; color: var(--text-secondary);">차단한 사용자가 없습니다. 안전하고 편안한 환경을 유지하고 있습니다.</div>
+        <a href="/" class="btn btn-primary" style="font-size: 15px; padding: 12px 24px; border-radius: 8px; font-weight: 600;">
+          홈으로 돌아가기
+        </a>
+      </div>
+    </div>
+  <% } %>
+
+<script>
+// 차단 해제 함수
+async function unblockUser(targetId, username, blockId) {
+  // 커스텀 모달 표시 (차단하기와 동일한 UI)
+  const confirmDialog = document.createElement('div');
+  confirmDialog.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; z-index: 10000;';
+  confirmDialog.innerHTML = `
+    <div style="background: white; padding: 2rem; border-radius: 1rem; max-width: 400px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.2);">
+      <h3 style="margin: 0 0 1rem 0; color: var(--text-primary); font-size: 1.25rem;">차단 해제</h3>
+      <p style="margin: 0 0 2rem 0; color: var(--text-secondary); line-height: 1.6;">
+        <strong>${username}</strong>님의 차단을 해제하시겠습니까?<br>
+        차단 해제 후 해당 사용자가 다시 추천/채팅/게시글에서 보이게 됩니다.
+      </p>
+      <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+        <button 
+          id="cancelUnblockBtn" 
+          type="button"
+          class="btn btn-outline"
+          style="padding: 0.75rem 1.5rem;"
+        >
+          아니에요
+        </button>
+        <button 
+          id="confirmUnblockBtn" 
+          type="button"
+          class="btn btn-primary"
+          style="padding: 0.75rem 1.5rem; background: #10b981; border-color: #10b981;"
+        >
+          해제할래요
+        </button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(confirmDialog);
+  
+  // 취소 버튼
+  document.getElementById('cancelUnblockBtn').addEventListener('click', () => {
+    document.body.removeChild(confirmDialog);
+  });
+  
+  // 확인 버튼
+  document.getElementById('confirmUnblockBtn').addEventListener('click', async () => {
+    try {
+      const response = await fetch('/block', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ target_id: targetId })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        document.body.removeChild(confirmDialog);
+        
+        // 차단 항목 제거
+        const blockItem = document.getElementById(`block-item-${blockId}`);
+        if (blockItem) {
+          blockItem.style.transition = 'opacity 0.3s';
+          blockItem.style.opacity = '0';
+          setTimeout(() => {
+            blockItem.remove();
+            
+            // 목록이 비어있으면 메시지 표시
+            const blockItems = document.querySelectorAll('.block-item');
+            if (blockItems.length === 0) {
+              window.location.reload();
+            }
+          }, 300);
+        }
+      } else {
+        alert('차단 해제 실패: ' + (data.error || '알 수 없는 오류'));
+      }
+    } catch (error) {
+      console.error('차단 해제 오류:', error);
+      alert('차단 해제 중 오류가 발생했습니다.');
+    }
+  });
+}
+</script>
+
+</div>
+</div>
+
+<%- include('../layout/footer') %>
+

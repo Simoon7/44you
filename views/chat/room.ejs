@@ -1,0 +1,294 @@
+<%- include('../layout/header') %>
+
+<% if (locals.error) { %>
+  <div class="alert alert-danger">
+    <%= error %>
+  </div>
+<% } %>
+
+<div style="max-width: 900px; margin: 2rem auto; height: calc(100vh - 250px); background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 0.75rem; display: flex; flex-direction: column;">
+  
+  <!-- 채팅방 헤더 -->
+  <div style="padding: 1.5rem; border-bottom: 1px solid var(--border-color); background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); color: white; border-radius: 0.75rem 0.75rem 0 0;">
+    <h2 style="margin: 0;">
+      💬 <%= otherUser?.username || '알 수 없음' %>
+    </h2>
+  </div>
+
+  <!-- 메시지 영역 -->
+  <div id="messages" style="flex: 1; overflow-y: auto; padding: 1rem 0.5rem; display: flex; flex-direction: column; gap: 0.75rem; background-color: #fafafa;">
+    <% if (messages && messages.length > 0) { %>
+      <% messages.forEach(msg => { %>
+        <div style="display: flex; <%= msg.userId === user.id ? 'justify-content: flex-end;' : 'justify-content: flex-start;' %>">
+          <div style="max-width: 80%; min-width: 120px; padding: 0.75rem 1rem; border-radius: 0.75rem; display: inline-block; word-break: break-word; <%= msg.userId === user.id ? 'background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); color: white;' : 'background-color: white; color: var(--text-primary); border: 1px solid var(--border-color);' %>">
+            <div style="<%= msg.userId === user.id ? '' : 'font-weight: 600; font-size: 0.875rem; margin-bottom: 0.25rem; text-align: center;' %>">
+              <%= msg.userId === user.id ? '' : (msg.messageSender?.username || '알 수 없음') %>
+            </div>
+            <div style="white-space: pre-wrap; word-break: break-word; margin-bottom: 0.25rem; text-align: center;">
+              <%= msg.content %>
+            </div>
+            <div style="font-size: 0.7rem; opacity: 0.7; text-align: right;">
+              <%= msg.createdAt?.toLocaleTimeString('ko-KR', {hour: '2-digit', minute: '2-digit'}) %>
+            </div>
+          </div>
+        </div>
+      <% }); %>
+    <% } else { %>
+      <div style="flex: 1; display: flex; align-items: center; justify-content: center; color: var(--text-secondary);">
+        <div style="text-align: center;">
+          <div style="font-size: 2rem; margin-bottom: 1rem;">💬</div>
+          <p>아직 메시지가 없습니다.</p>
+          <p style="font-size: 0.875rem;">대화를 시작해보세요!</p>
+          <% if (randomAutoMessage) { %>
+            <div id="autoMessageChoice" style="margin-top: 2rem; padding: 1.5rem; background: linear-gradient(135deg, #f8f9ff, #e8f2ff); border: 2px solid var(--primary-light); border-radius: 1rem; max-width: 400px;">
+              <h4 style="color: var(--primary-color); margin: 0 0 1rem 0; font-size: 1.1rem;">💌 자동 인사 메시지</h4>
+              <p style="color: var(--text-secondary); margin: 0 0 1rem 0; font-size: 0.9rem;">상대방에게 먼저 인사하기 어려우시면 이 메시지를 사용해보세요!</p>
+              <div style="background: white; padding: 1rem; border-radius: 0.5rem; border: 1px solid var(--border-color); margin-bottom: 1rem; text-align: left;">
+                <strong>제안 메시지:</strong><br>
+                "<%= randomAutoMessage %>"
+              </div>
+              <div style="display: flex; gap: 0.5rem; justify-content: center;">
+                <button type="button" id="useAutoMessageBtn" class="btn btn-primary" style="font-size: 0.9rem;">
+                  이 메시지 사용하기
+                </button>
+                <button type="button" id="skipAutoMessageBtn" class="btn btn-outline" style="font-size: 0.9rem;">
+                  직접 입력하기
+                </button>
+              </div>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- 입력 영역 -->
+  <div style="padding: 1.5rem; border-top: 1px solid var(--border-color); background-color: white; border-radius: 0 0 0.75rem 0.75rem;">
+    <form id="messageForm" style="display: flex; gap: 1rem;">
+      <input 
+        type="hidden" 
+        id="roomId" 
+        value="<%= roomId %>"
+      >
+      <input 
+        type="hidden" 
+        id="userId" 
+        value="<%= user.id %>"
+      >
+      <input 
+        type="hidden" 
+        id="username" 
+        value="<%= user.username %>"
+      >
+      <input 
+        type="text" 
+        id="messageInput" 
+        placeholder="메시지를 입력하세요..." 
+        style="flex: 1; padding: 0.75rem 1rem; border: 1px solid var(--border-color); border-radius: 0.5rem; font-size: 1rem;"
+      >
+      <button 
+        type="submit" 
+        class="btn btn-primary"
+        style="white-space: nowrap;"
+      >
+        전송
+      </button>
+    </form>
+  </div>
+</div>
+
+<div style="text-align: center; margin: 2rem 0;">
+  <a href="/chat/list" class="btn btn-outline">
+    목록으로 돌아가기
+  </a>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  const socket = io();
+  const roomId = <%= roomId %>;
+  const userId = <%= user.id %>;
+  const username = '<%= user.username %>';
+
+  // 채팅방 입장
+  socket.emit('join-room', roomId.toString());
+
+  // 메시지 추가 함수 (중복 방지)
+  const addedMessageIds = new Set();
+  
+  function hideAutoMessageChoice() {
+    const autoMessageChoice = document.getElementById('autoMessageChoice');
+    if (autoMessageChoice) {
+      autoMessageChoice.style.display = 'none';
+    }
+  }
+  
+  function addMessageToScreen(data, isOptimistic = false) {
+    // 중복 체크 (optimistic update는 제외)
+    if (!isOptimistic && data.messageId && addedMessageIds.has(data.messageId)) {
+      return;
+    }
+    
+    const messagesDiv = document.getElementById('messages');
+    
+    // 빈 메시지 영역 제거
+    const emptyState = messagesDiv.querySelector('div[style*="flex: 1; display: flex; align-items: center"]');
+    if (emptyState) {
+      emptyState.remove();
+    }
+    
+    // 자동메시지 선택지 숨기기
+    hideAutoMessageChoice();
+    
+    const messageEl = document.createElement('div');
+    messageEl.style.display = 'flex';
+    messageEl.style.marginBottom = '0.75rem';
+    messageEl.style.justifyContent = data.userId === userId ? 'flex-end' : 'flex-start';
+
+    const contentEl = document.createElement('div');
+    contentEl.style.maxWidth = '80%';
+    contentEl.style.minWidth = '120px';
+    contentEl.style.padding = '0.75rem 1rem';
+    contentEl.style.borderRadius = '0.75rem';
+    contentEl.style.wordBreak = 'break-word';
+    contentEl.style.display = 'inline-block';
+    
+    if (data.userId === userId) {
+      contentEl.style.background = 'linear-gradient(135deg, var(--primary-color), var(--primary-dark))';
+      contentEl.style.color = 'white';
+    } else {
+      contentEl.style.backgroundColor = 'white';
+      contentEl.style.color = 'var(--text-primary)';
+      contentEl.style.border = '1px solid var(--border-color)';
+    }
+
+    const userEl = document.createElement('div');
+    if (data.userId !== userId) {
+      userEl.style.fontWeight = '600';
+      userEl.style.fontSize = '0.875rem';
+      userEl.style.marginBottom = '0.25rem';
+      userEl.style.textAlign = 'center';
+      userEl.textContent = data.username;
+      contentEl.appendChild(userEl);
+    }
+
+    const textEl = document.createElement('div');
+    textEl.style.whiteSpace = 'pre-wrap';
+    textEl.style.wordBreak = 'break-word';
+    textEl.style.marginBottom = '0.25rem';
+    textEl.style.textAlign = 'center';
+    textEl.textContent = data.content;
+    contentEl.appendChild(textEl);
+
+    const timeEl = document.createElement('div');
+    timeEl.style.fontSize = '0.7rem';
+    timeEl.style.opacity = '0.7';
+    timeEl.style.textAlign = 'right';
+    const timestamp = data.createdAt || data.timestamp;
+    timeEl.textContent = new Date(timestamp).toLocaleTimeString('ko-KR', {hour: '2-digit', minute: '2-digit'});
+    contentEl.appendChild(timeEl);
+
+    messageEl.appendChild(contentEl);
+    messagesDiv.appendChild(messageEl);
+    
+    // 메시지 ID 저장
+    if (data.messageId) {
+      addedMessageIds.add(data.messageId);
+    }
+    
+    // 자동 스크롤
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    
+    // optimistic update인 경우 ID를 임시로 저장
+    if (isOptimistic && !data.messageId) {
+      messageEl.setAttribute('data-temp-id', Date.now().toString());
+    }
+  }
+
+  // 메시지 폼 제출
+  document.getElementById('messageForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const input = document.getElementById('messageInput');
+    const content = input.value.trim();
+    
+    if (content) {
+      // 즉시 화면에 표시 (optimistic update)
+      addMessageToScreen({
+        userId: userId,
+        username: username,
+        content: content,
+        timestamp: new Date(),
+        createdAt: new Date()
+      }, true);
+      
+      // 서버에 전송
+      socket.emit('send-message', {
+        roomId: roomId,
+        content: content,
+        userId: userId,
+        username: username
+      });
+      input.value = '';
+    }
+  });
+
+  // 메시지 수신
+  socket.on('receive-message', (data) => {
+    // 자신이 보낸 메시지이고 이미 표시된 경우, optimistic update를 실제 메시지로 교체
+    if (data.userId === userId) {
+      const tempMessages = document.querySelectorAll('[data-temp-id]');
+      if (tempMessages.length > 0 && data.content === tempMessages[tempMessages.length - 1].querySelector('div[style*="white-space: pre-wrap"]')?.textContent) {
+        tempMessages[tempMessages.length - 1].remove();
+      }
+    }
+    
+    // 메시지 추가
+    addMessageToScreen(data);
+  });
+
+  // 자동 메시지 버튼 이벤트
+  const useAutoMessageBtn = document.getElementById('useAutoMessageBtn');
+  const skipAutoMessageBtn = document.getElementById('skipAutoMessageBtn');
+
+  if (useAutoMessageBtn && skipAutoMessageBtn) {
+    // "이 메시지 사용하기" 버튼
+    useAutoMessageBtn.addEventListener('click', () => {
+      const autoMessage = '<%= randomAutoMessage %>';
+      
+      // 자동메시지 선택지 숨기기
+      hideAutoMessageChoice();
+      
+      // 즉시 화면에 표시 (optimistic update)
+      addMessageToScreen({
+        userId: userId,
+        username: username,
+        content: autoMessage,
+        timestamp: new Date(),
+        createdAt: new Date()
+      }, true);
+      
+      socket.emit('send-message', {
+        roomId: roomId,
+        content: autoMessage,
+        userId: userId,
+        username: username
+      });
+    });
+
+    // "직접 입력하기" 버튼
+    skipAutoMessageBtn.addEventListener('click', () => {
+      // 자동메시지 선택지 숨기기
+      hideAutoMessageChoice();
+      // 메시지 입력창에 포커스
+      document.getElementById('messageInput').focus();
+    });
+  }
+
+  // 페이지 로드 시 스크롤 하단으로
+  window.addEventListener('load', () => {
+    const messagesDiv = document.getElementById('messages');
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  });
+</script>
+
+<%- include('../layout/footer') %>

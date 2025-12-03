@@ -1,0 +1,761 @@
+<%- include('../layout/header') %>
+
+<style>
+  /* Chat Page with Gradient Background */
+  body {
+    /* 어두운 그라데이션 배경은 공통 CSS에서 처리 */
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* body::before는 공통 CSS의 별 레이어로 사용됨 */
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--spacing-xl) var(--spacing-xl);
+  }
+
+  .form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(106, 90, 224, 0.1);
+    outline: none;
+  }
+
+  @media (max-width: 768px) {
+    .container > div[style*="display: flex"] {
+      flex-direction: column !important;
+      height: auto !important;
+    }
+    
+    .container > div[style*="display: flex"] > div:first-child {
+      flex: 1 !important;
+      max-height: 300px;
+      margin-bottom: var(--spacing-lg);
+    }
+    
+    .container > div[style*="display: flex"] > div:last-child {
+      min-height: 500px;
+    }
+  }
+</style>
+
+<div class="container">
+  <div class="card" style="max-width: 100%; margin-bottom: var(--spacing-xl);">
+    <div class="card-header" style="padding: var(--spacing-lg) var(--spacing-xl); border-bottom: 2px solid var(--border-color);">
+      <h2 style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin: 0 0 var(--spacing-sm) 0;">💬 채팅</h2>
+      <p style="color: var(--text-primary); font-size: 16px; font-weight: 500; margin: 0;">다른 사용자들과 1:1 채팅을 시작하세요.</p>
+    </div>
+  </div>
+
+<% if (locals.error) { %>
+  <div class="alert alert-danger">
+    <%= error %>
+  </div>
+<% } %>
+
+<% if (locals.user) { %>
+  <div style="display: flex; gap: var(--spacing-xl); height: calc(100vh - 280px); min-height: 600px;">
+    <!-- 왼쪽: 채팅 목록 -->
+    <div style="flex: 0 0 400px; overflow-y: auto;">
+      <% if (chatRooms && chatRooms.length > 0) { %>
+        <div class="card" style="height: 100%; display: flex; flex-direction: column;">
+          <div class="card-header" style="padding: var(--spacing-lg) var(--spacing-xl); border-bottom: 2px solid var(--border-color);">
+            <h3 style="margin: 0; font-size: 18px; font-weight: 600; color: var(--text-primary);">진행 중인 채팅</h3>
+          </div>
+          
+          <div style="padding: var(--spacing-md); flex: 1; overflow-y: auto;">
+            <% chatRooms.forEach(room => { %>
+              <%
+                const otherUser = room.user1Id === user.id ? room.user2 : room.user1;
+                const otherUserId = otherUser.id;
+                const currentYear = new Date().getFullYear();
+                const birthYear = otherUser.birthYear ? parseInt(otherUser.birthYear) : null;
+                const age = birthYear ? currentYear - birthYear : null;
+                const genderIcon = otherUser.gender === '남' || otherUser.gender === 'M' || otherUser.gender === 'male' ? '👨' : '👩';
+                const genderText = otherUser.gender === '남' || otherUser.gender === 'M' || otherUser.gender === 'male' ? '남성' : '여성';
+                const genderColor = otherUser.gender === '남' || otherUser.gender === 'M' || otherUser.gender === 'male' ? '#2196F3' : '#E91E63';
+              %>
+              <div 
+                class="chat-room-item <%= (typeof targetUserId !== 'undefined' && targetUserId && targetUserId === otherUserId) ? 'active' : '' %>" 
+                data-user-id="<%= otherUserId %>"
+                data-room-id="<%= room.id %>"
+                data-user-name="<%= otherUser.username || '알 수 없음' %>"
+                style="display: flex; justify-content: space-between; align-items: flex-start; padding: var(--spacing-md); border: 1px solid var(--border-color); background: white; border-radius: var(--border-radius); margin-bottom: var(--spacing-sm); cursor: pointer; transition: all 0.2s ease; <%= (typeof targetUserId !== 'undefined' && targetUserId && targetUserId === otherUserId) ? 'background: linear-gradient(135deg, rgba(106, 90, 224, 0.1), rgba(139, 124, 246, 0.1)) !important; border-color: var(--primary-color) !important; border-left: 3px solid var(--primary-color) !important;' : '' %>" 
+                onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)';" 
+                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';"
+              >
+                <div style="flex: 1; min-width: 0;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: nowrap;">
+                    <span style="font-size: 16px; flex-shrink: 0;"><%= genderIcon %></span>
+                    <span style="font-weight: 600; font-size: 15px; color: var(--text-primary); white-space: nowrap; overflow: visible;"><%= otherUser.username || '알 수 없음' %></span>
+                    <% if (age !== null && age !== undefined) { %>
+                      <span style="font-size: 12px; color: <%= genderColor %>; font-weight: 600; background: <%= genderColor %>15; padding: 3px 8px; border-radius: 12px; white-space: nowrap; flex-shrink: 0;">
+                        <%= age %>세 <%= genderText %>
+                      </span>
+                    <% } else { %>
+                      <span style="font-size: 12px; color: <%= genderColor %>; font-weight: 600; background: <%= genderColor %>15; padding: 3px 8px; border-radius: 12px; white-space: nowrap; flex-shrink: 0;">
+                        <%= genderText %>
+                      </span>
+                    <% } %>
+                  </div>
+                  <div style="font-size: 13px; color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                    <%= room.lastMessage?.substring(0, 35) || '메시지 없음' %>
+                  </div>
+                </div>
+                <div style="text-align: right; margin-left: var(--spacing-sm); flex-shrink: 0;">
+                  <div style="font-size: 12px; color: var(--text-secondary); white-space: nowrap;">
+                    <%= room.lastMessageTime ? new Date(room.lastMessageTime).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' }) : '' %>
+                  </div>
+                </div>
+              </div>
+            <% }); %>
+          </div>
+        </div>
+      <% } else { %>
+        <div class="card" style="height: 100%; display: flex; flex-direction: column;">
+          <div class="card-header" style="padding: var(--spacing-lg) var(--spacing-xl); border-bottom: 2px solid var(--border-color);">
+            <h3 style="margin: 0; font-size: 18px; font-weight: 600; color: var(--text-primary);">진행 중인 채팅</h3>
+          </div>
+          <div style="padding: var(--spacing-2xl); text-align: center; color: var(--text-secondary); flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+            <div style="font-size: 48px; margin-bottom: var(--spacing-md);">💬</div>
+            <p style="margin: 0; font-size: 15px; font-weight: 500;">아직 진행 중인 채팅이 없습니다.</p>
+            <p style="font-size: 14px; margin-top: var(--spacing-sm); color: var(--text-secondary);">매칭 페이지에서 다른 사용자와 채팅을 시작해보세요.</p>
+          </div>
+        </div>
+      <% } %>
+    </div>
+
+    <!-- 오른쪽: 채팅창 -->
+    <div class="card" style="flex: 1; display: flex; flex-direction: column; padding: 0; overflow: hidden;">
+      <!-- 채팅방 헤더 -->
+      <div id="chatHeader" style="padding: var(--spacing-lg) var(--spacing-xl); border-bottom: 2px solid var(--border-color); background: white; display: none; position: relative;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <h2 style="margin: 0; font-size: 18px; font-weight: 600; color: var(--text-primary);">
+            <span id="chatUserName">선택된 사용자</span>
+          </h2>
+          <div style="display: flex; gap: var(--spacing-xs); align-items: center;">
+            <!-- ellipsis menu -->
+            <div class="chat-user-menu-container" style="position: relative;">
+              <button 
+                class="ellipsis-btn" 
+                id="chatUserMenuBtn"
+                onclick="toggleChatUserMenu()"
+                style="background: var(--bg-page); border: 1px solid var(--border-color); border-radius: 6px; padding: 6px 12px; cursor: pointer; color: var(--text-secondary); font-size: 18px; line-height: 1; transition: all 0.2s ease;"
+                onmouseover="this.style.background='#F3F4F6'; this.style.borderColor='var(--primary-color)'; this.style.color='var(--primary-color)'"
+                onmouseout="this.style.background='var(--bg-page)'; this.style.borderColor='var(--border-color)'; this.style.color='var(--text-secondary)'"
+                title="더보기"
+              >
+                ⋮
+              </button>
+              <div id="chatUserMenu" class="user-menu" style="display: none; position: absolute; right: 0; top: 100%; background: white; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1000; min-width: 160px; margin-top: 8px; overflow: hidden;">
+                <button onclick="blockChatUser()" style="width: 100%; padding: 12px 16px; border: none; background: none; text-align: left; cursor: pointer; transition: background 0.2s; font-size: 14px; color: var(--text-primary);" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='white'">
+                  🚫 차단하기
+                </button>
+              </div>
+            </div>
+            <!-- 나가기 버튼 -->
+            <button 
+              id="leaveChatBtn" 
+              type="button"
+              style="background: var(--bg-page); border: 1px solid var(--border-color); border-radius: 6px; padding: 6px 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;"
+              onmouseover="this.style.background='#F3F4F6'; this.style.borderColor='var(--primary-color)'"
+              onmouseout="this.style.background='var(--bg-page)'; this.style.borderColor='var(--border-color)'"
+              title="채팅방 나가기"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="16 17 21 12 16 7"></polyline>
+                <line x1="21" y1="12" x2="9" y2="12"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 메시지 영역 -->
+      <div id="messages" style="flex: 1; overflow-y: auto; padding: var(--spacing-lg); display: flex; flex-direction: column; gap: var(--spacing-md); background-color: var(--bg-page);">
+        <div style="flex: 1; display: flex; align-items: center; justify-content: center; color: var(--text-secondary);">
+          <div style="text-align: center;">
+            <div style="font-size: 48px; margin-bottom: var(--spacing-md);">💬</div>
+            <p style="margin: 0; font-size: 16px; font-weight: 500;">채팅방을 선택해주세요</p>
+            <p style="font-size: 14px; margin-top: var(--spacing-xs); color: var(--text-secondary);">왼쪽에서 대화할 상대를 선택하세요</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 입력 영역 -->
+      <div id="chatInputArea" style="padding: var(--spacing-lg) var(--spacing-xl); border-top: 1px solid var(--border-color); background-color: white; display: none;">
+        <form id="messageForm" style="display: flex; gap: var(--spacing-sm); align-items: center;">
+          <input 
+            type="hidden" 
+            id="roomId" 
+            value=""
+          >
+          <input 
+            type="hidden" 
+            id="userId" 
+            value="<%= user.id %>"
+          >
+          <input 
+            type="hidden" 
+            id="username" 
+            value="<%= user.username %>"
+          >
+          <input 
+            type="text" 
+            id="messageInput" 
+            placeholder="메시지를 입력하세요..." 
+            class="form-control"
+            style="flex: 1; height: 44px; padding: 0 var(--spacing-md); border-radius: 8px; font-size: 14px; border: 1px solid var(--border-color);"
+          >
+          <button 
+            type="submit" 
+            class="btn btn-primary"
+            style="height: 44px; padding: 0 var(--spacing-lg); font-size: 15px; font-weight: 600; border-radius: 8px; white-space: nowrap;"
+          >
+            전송
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+<% } else { %>
+  <div class="alert alert-info">
+    채팅을 사용하려면 <a href="/auth/login">로그인</a>해주세요.
+  </div>
+<% } %>
+
+<script src="/socket.io/socket.io.js"></script>
+<!-- 차단 기능 -->
+<script src="/js/blockReport.js"></script>
+<script>
+  const socket = io();
+  let currentRoomId = null;
+  let currentUserId = <%= user ? user.id : 'null' %>;
+  let currentUsername = '<%= user ? user.username : "" %>';
+  const addedMessageIds = new Set();
+  let currentAutoMessage = null;
+
+  // 자동 메시지 표시 함수 (UI 변경으로 더 이상 사용하지 않음 - 자동메시지는 팝업에서 처리)
+  function showEmptyStateWithAutoMessage() {
+    const messagesDiv = document.getElementById('messages');
+    // 자동메시지 선택 UI는 제거 - 팝업에서 처리하므로 채팅창에서는 표시하지 않음
+    const autoMessage = null;
+    
+    if (false && autoMessage) {
+      messagesDiv.innerHTML = `
+        <div style="flex: 1; display: flex; align-items: center; justify-content: center; color: var(--text-secondary);">
+          <div style="text-align: center; max-width: 500px; padding: 2rem;">
+            <div style="font-size: 2rem; margin-bottom: 1rem;">💬</div>
+            <p>아직 메시지가 없습니다.</p>
+            <p style="font-size: 0.875rem; margin-bottom: 2rem;">대화를 시작해보세요!</p>
+            <div id="autoMessageChoice" style="margin-top: 2rem; padding: 1.5rem; background: linear-gradient(135deg, #f8f9ff, #e8f2ff); border: 2px solid var(--primary-light); border-radius: 1rem; position: relative;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h4 style="color: var(--primary-color); margin: 0; font-size: 1.1rem;">💌 자동 인사 메시지</h4>
+                <button 
+                  type="button" 
+                  id="refreshAutoMessageBtn" 
+                  style="background: rgba(106, 90, 224, 0.1); border: 1px solid var(--primary-light); border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; padding: 0;"
+                  onmouseover="this.style.background='rgba(106, 90, 224, 0.2)'; this.style.transform='rotate(180deg)';"
+                  onmouseout="this.style.background='rgba(106, 90, 224, 0.1)'; this.style.transform='rotate(0deg)';"
+                  title="다른 메시지 보기"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="23 4 23 10 17 10"></polyline>
+                    <polyline points="1 20 1 14 7 14"></polyline>
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                  </svg>
+                </button>
+              </div>
+              <p style="color: var(--text-secondary); margin: 0 0 1rem 0; font-size: 0.9rem;">상대방에게 먼저 인사하기 어려우시면 이 메시지를 사용해보세요!</p>
+              <div id="autoMessageContent" style="background: white; padding: 1rem; border-radius: 0.5rem; border: 1px solid var(--border-color); margin-bottom: 1rem; text-align: left;">
+                <strong>제안 메시지:</strong><br>
+                "<span id="autoMessageText">${autoMessage}</span>"
+              </div>
+              <div style="display: flex; gap: 0.5rem; justify-content: center;">
+                <button type="button" id="useAutoMessageBtn" class="btn btn-primary" style="font-size: 0.9rem;">
+                  이 메시지 사용하기
+                </button>
+                <button type="button" id="skipAutoMessageBtn" class="btn btn-outline" style="font-size: 0.9rem;">
+                  직접 입력하기
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      // 자동 메시지 버튼 이벤트
+      const useAutoMessageBtn = document.getElementById('useAutoMessageBtn');
+      const skipAutoMessageBtn = document.getElementById('skipAutoMessageBtn');
+      const refreshAutoMessageBtn = document.getElementById('refreshAutoMessageBtn');
+      
+      // 새로고침 버튼 이벤트
+      if (refreshAutoMessageBtn) {
+        refreshAutoMessageBtn.addEventListener('click', async () => {
+          try {
+            // 버튼 회전 애니메이션
+            refreshAutoMessageBtn.style.transform = 'rotate(360deg)';
+            refreshAutoMessageBtn.style.transition = 'transform 0.5s ease';
+            
+            const response = await fetch('/chat/get-random-auto-message');
+            const data = await response.json();
+            
+            if (data.success && data.message) {
+              // currentAutoMessage 업데이트
+              currentAutoMessage = data.message;
+              
+              // 화면의 메시지 텍스트 업데이트
+              const autoMessageText = document.getElementById('autoMessageText');
+              if (autoMessageText) {
+                autoMessageText.textContent = data.message;
+              }
+            } else {
+              alert('새로운 메시지를 불러올 수 없습니다.');
+            }
+          } catch (error) {
+            console.error('자동 메시지 새로고침 오류:', error);
+            alert('메시지를 불러오는 중 오류가 발생했습니다.');
+          } finally {
+            // 애니메이션 초기화
+            setTimeout(() => {
+              refreshAutoMessageBtn.style.transform = 'rotate(0deg)';
+            }, 500);
+          }
+        });
+      }
+      
+      if (useAutoMessageBtn) {
+        useAutoMessageBtn.addEventListener('click', () => {
+          // 현재 표시된 메시지 가져오기
+          const autoMessageText = document.getElementById('autoMessageText');
+          const messageToSend = autoMessageText ? autoMessageText.textContent : autoMessage;
+          
+          hideAutoMessageChoice();
+          addMessageToScreen({
+            userId: currentUserId,
+            username: currentUsername,
+            content: messageToSend,
+            timestamp: new Date(),
+            createdAt: new Date()
+          }, true);
+          
+          socket.emit('send-message', {
+            roomId: currentRoomId,
+            content: messageToSend,
+            userId: currentUserId,
+            username: currentUsername
+          });
+        });
+      }
+      
+      if (skipAutoMessageBtn) {
+        skipAutoMessageBtn.addEventListener('click', () => {
+          hideAutoMessageChoice();
+          document.getElementById('messageInput').focus();
+        });
+      }
+    } else {
+      messagesDiv.innerHTML = `
+        <div style="flex: 1; display: flex; align-items: center; justify-content: center; color: var(--text-secondary);">
+          <div style="text-align: center;">
+            <div style="font-size: 2rem; margin-bottom: 1rem;">💬</div>
+            <p>아직 메시지가 없습니다.</p>
+            <p style="font-size: 0.875rem;">대화를 시작해보세요!</p>
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  function hideAutoMessageChoice() {
+    const autoMessageChoice = document.getElementById('autoMessageChoice');
+    if (autoMessageChoice) {
+      autoMessageChoice.style.display = 'none';
+    }
+  }
+
+  // 채팅방 클릭 이벤트
+  async function openChatRoom(roomItem) {
+    const targetUserId = roomItem.getAttribute('data-user-id');
+    const roomId = roomItem.getAttribute('data-room-id');
+    
+    // 기존 방 나가기
+    if (currentRoomId) {
+      socket.emit('leave-room', currentRoomId.toString());
+    }
+    
+    // 새 방 입장
+    currentRoomId = parseInt(roomId);
+    socket.emit('join-room', currentRoomId.toString());
+    
+    // UI 업데이트
+    document.querySelectorAll('.chat-room-item').forEach(i => {
+      i.style.background = '';
+      i.style.borderLeft = '';
+    });
+    roomItem.style.background = 'linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(79, 172, 254, 0.2))';
+    roomItem.style.borderLeft = '4px solid var(--primary-color)';
+    
+    // 채팅창 표시
+    document.getElementById('chatHeader').style.display = 'block';
+    document.getElementById('chatInputArea').style.display = 'block';
+    document.getElementById('roomId').value = roomId;
+    
+    // 사용자 이름 표시
+    const userName = roomItem.getAttribute('data-user-name') || roomItem.querySelector('span[style*="font-weight: 600"]')?.textContent.trim() || '알 수 없음';
+    document.getElementById('chatUserName').textContent = userName;
+    
+    // 타겟 사용자 ID 저장 (차단/신고용)
+    document.getElementById('chatHeader').setAttribute('data-target-user-id', targetUserId);
+    
+    // 메시지 로드
+    await loadMessages(roomId);
+  }
+
+  document.querySelectorAll('.chat-room-item').forEach(item => {
+    item.addEventListener('click', function() {
+      openChatRoom(this);
+    });
+  });
+
+  // 페이지 로드 시 타겟 채팅방 자동 열기
+  <% if (typeof targetUserId !== 'undefined' && targetUserId && targetRoomId) { %>
+    document.addEventListener('DOMContentLoaded', async function() {
+      // 약간의 지연을 두어 DOM이 완전히 렌더링된 후 실행
+      setTimeout(async () => {
+        const targetRoomItem = document.querySelector(`.chat-room-item[data-user-id="<%= targetUserId %>"]`);
+        if (targetRoomItem) {
+          currentAutoMessage = '<%= (typeof randomAutoMessage !== 'undefined' && randomAutoMessage) ? randomAutoMessage.replace(/'/g, "\\'") : "" %>';
+          await openChatRoom(targetRoomItem);
+          
+          // autoMessage=true이고 세션스토리지에 메시지가 있으면 자동 전송
+          const urlParams = new URLSearchParams(window.location.search);
+          const shouldAutoMessage = urlParams.get('autoMessage') === 'true';
+          
+          if (shouldAutoMessage) {
+            const storedMessage = sessionStorage.getItem(`autoMessage_${<%= targetUserId %>}`);
+            if (storedMessage && currentRoomId) {
+              // 세션스토리지에서 메시지 가져오기
+              const messageContent = storedMessage;
+              
+              // 자동메시지 전송
+              try {
+                const response = await fetch('/chat/send-auto-message', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                    targetUserId: <%= targetUserId %>,
+                    message: messageContent
+                  })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                  // 세션스토리지에서 메시지 삭제
+                  sessionStorage.removeItem(`autoMessage_${<%= targetUserId %>}`);
+                  
+                  // 메시지 목록 새로고침
+                  await loadMessages(currentRoomId);
+                } else {
+                  console.error('자동메시지 전송 실패:', data.error);
+                }
+              } catch (error) {
+                console.error('자동메시지 전송 오류:', error);
+              }
+            }
+          }
+        }
+      }, 100);
+    });
+  <% } %>
+
+  // 메시지 로드 함수
+  async function loadMessages(roomId) {
+    try {
+      const response = await fetch(`/chat/api/messages/${roomId}`);
+      const data = await response.json();
+      
+      const messagesDiv = document.getElementById('messages');
+      messagesDiv.innerHTML = '';
+      addedMessageIds.clear();
+      
+      if (data.messages && data.messages.length > 0) {
+        data.messages.forEach(msg => {
+          addMessageToScreen({
+            userId: msg.userId,
+            username: msg.messageSender?.username || '알 수 없음',
+            content: msg.content,
+            createdAt: msg.createdAt,
+            messageId: msg.id
+          });
+        });
+      } else {
+        // 자동 메시지 가져오기
+        if (!currentAutoMessage) {
+          try {
+            const autoMsgResponse = await fetch('/chat/get-random-auto-message');
+            const autoMsgData = await autoMsgResponse.json();
+            if (autoMsgData.success) {
+              currentAutoMessage = autoMsgData.message;
+            }
+          } catch (error) {
+            console.error('자동 메시지 가져오기 오류:', error);
+          }
+        }
+        // 빈 메시지 상태 - 자동 메시지 표시
+        showEmptyStateWithAutoMessage();
+      }
+      
+      // 스크롤 하단으로
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    } catch (error) {
+      console.error('메시지 로드 오류:', error);
+    }
+  }
+
+  // 메시지 추가 함수
+  function addMessageToScreen(data, isOptimistic = false) {
+    if (!isOptimistic && data.messageId && addedMessageIds.has(data.messageId)) {
+      return;
+    }
+    
+    const messagesDiv = document.getElementById('messages');
+    
+    // 빈 메시지 영역 및 자동 메시지 제거
+    const emptyState = messagesDiv.querySelector('div[style*="flex: 1; display: flex; align-items: center"]');
+    if (emptyState) {
+      emptyState.remove();
+    }
+    hideAutoMessageChoice();
+    
+    // 자동 메시지 선택지 제거
+    const autoMessageChoice = document.getElementById('autoMessageChoice');
+    if (autoMessageChoice) {
+      autoMessageChoice.remove();
+    }
+    
+    const messageEl = document.createElement('div');
+    messageEl.style.display = 'flex';
+    messageEl.style.marginBottom = '0.75rem';
+    messageEl.style.justifyContent = data.userId === currentUserId ? 'flex-end' : 'flex-start';
+
+    const contentEl = document.createElement('div');
+    contentEl.style.maxWidth = '70%';
+    contentEl.style.minWidth = '100px';
+    contentEl.style.padding = '10px 14px';
+    contentEl.style.borderRadius = '12px';
+    contentEl.style.wordBreak = 'break-word';
+    contentEl.style.display = 'inline-block';
+    contentEl.style.boxShadow = '0 2px 4px rgba(0,0,0,0.05)';
+    
+    if (data.userId === currentUserId) {
+      contentEl.style.background = 'linear-gradient(135deg, var(--primary-color), var(--primary-dark))';
+      contentEl.style.color = 'white';
+    } else {
+      contentEl.style.backgroundColor = 'white';
+      contentEl.style.color = 'var(--text-primary)';
+      contentEl.style.border = '1px solid var(--border-color)';
+    }
+
+    if (data.userId !== currentUserId) {
+      const userEl = document.createElement('div');
+      userEl.style.fontWeight = '600';
+      userEl.style.fontSize = '13px';
+      userEl.style.marginBottom = '4px';
+      userEl.style.color = data.userId === currentUserId ? 'rgba(255,255,255,0.9)' : 'var(--text-primary)';
+      userEl.textContent = data.username;
+      contentEl.appendChild(userEl);
+    }
+
+    const textEl = document.createElement('div');
+    textEl.style.whiteSpace = 'pre-wrap';
+    textEl.style.wordBreak = 'break-word';
+    textEl.style.marginBottom = '4px';
+    textEl.style.fontSize = '14px';
+    textEl.style.lineHeight = '1.5';
+    textEl.textContent = data.content;
+    contentEl.appendChild(textEl);
+
+    const timeEl = document.createElement('div');
+    timeEl.style.fontSize = '11px';
+    timeEl.style.opacity = '0.6';
+    timeEl.style.textAlign = 'right';
+    timeEl.style.marginTop = '2px';
+    const timestamp = data.createdAt || data.timestamp;
+    timeEl.textContent = new Date(timestamp).toLocaleTimeString('ko-KR', {hour: '2-digit', minute: '2-digit'});
+    contentEl.appendChild(timeEl);
+
+    messageEl.appendChild(contentEl);
+    messagesDiv.appendChild(messageEl);
+    
+    if (data.messageId) {
+      addedMessageIds.add(data.messageId);
+    }
+    
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    
+    if (isOptimistic && !data.messageId) {
+      messageEl.setAttribute('data-temp-id', Date.now().toString());
+    }
+  }
+
+  // 메시지 폼 제출
+  document.getElementById('messageForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (!currentRoomId) return;
+    
+    const input = document.getElementById('messageInput');
+    const content = input.value.trim();
+    
+    if (content) {
+      addMessageToScreen({
+        userId: currentUserId,
+        username: currentUsername,
+        content: content,
+        timestamp: new Date(),
+        createdAt: new Date()
+      }, true);
+      
+      socket.emit('send-message', {
+        roomId: currentRoomId,
+        content: content,
+        userId: currentUserId,
+        username: currentUsername
+      });
+      input.value = '';
+    }
+  });
+
+  // 메시지 수신
+  socket.on('receive-message', (data) => {
+    if (data.roomId === currentRoomId) {
+      if (data.userId === currentUserId) {
+        const tempMessages = document.querySelectorAll('[data-temp-id]');
+        if (tempMessages.length > 0 && data.content === tempMessages[tempMessages.length - 1].querySelector('div[style*="white-space: pre-wrap"]')?.textContent) {
+          tempMessages[tempMessages.length - 1].remove();
+        }
+      }
+      addMessageToScreen(data);
+    }
+  });
+
+  // 채팅방 나가기 버튼 이벤트
+  document.getElementById('leaveChatBtn').addEventListener('click', async function() {
+    if (!currentRoomId) return;
+    
+    // 확인 다이얼로그 표시
+    const confirmDialog = document.createElement('div');
+    confirmDialog.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; z-index: 10000;';
+    confirmDialog.innerHTML = `
+      <div style="background: white; padding: 2rem; border-radius: 1rem; max-width: 400px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.2);">
+        <h3 style="margin: 0 0 1rem 0; color: var(--text-primary); font-size: 1.25rem;">채팅방 나가기</h3>
+        <p style="margin: 0 0 2rem 0; color: var(--text-secondary); line-height: 1.6;">
+          채팅방을 나가면 지금까지 한 채팅의 내용이 사라지게 됩니다.<br>
+          정말 나가시겠습니까?
+        </p>
+        <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+          <button 
+            id="cancelLeaveBtn" 
+            type="button"
+            class="btn btn-outline"
+            style="padding: 0.75rem 1.5rem;"
+          >
+            아니에요
+          </button>
+          <button 
+            id="confirmLeaveBtn" 
+            type="button"
+            class="btn btn-primary"
+            style="padding: 0.75rem 1.5rem; background: #ef4444; border-color: #ef4444;"
+          >
+            나갈래요
+          </button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(confirmDialog);
+
+    // 취소 버튼
+    document.getElementById('cancelLeaveBtn').addEventListener('click', () => {
+      document.body.removeChild(confirmDialog);
+    });
+
+    // 확인 버튼
+    document.getElementById('confirmLeaveBtn').addEventListener('click', async () => {
+      const roomIdToLeave = currentRoomId; // 삭제 전에 저장
+      
+      try {
+        const response = await fetch(`/chat/leave/${roomIdToLeave}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          // 소켓에서 방 나가기
+          socket.emit('leave-room', roomIdToLeave.toString());
+          
+          // 채팅 목록에서 해당 항목 제거
+          const roomItem = document.querySelector(`.chat-room-item[data-room-id="${roomIdToLeave}"]`);
+          if (roomItem) {
+            roomItem.remove();
+          }
+          
+          // UI 초기화
+          currentRoomId = null;
+          document.getElementById('chatHeader').style.display = 'none';
+          document.getElementById('chatInputArea').style.display = 'none';
+          document.getElementById('messages').innerHTML = `
+            <div style="flex: 1; display: flex; align-items: center; justify-content: center; color: var(--text-secondary);">
+              <div style="text-align: center;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">💬</div>
+                <p>채팅방을 선택해주세요</p>
+                <p style="font-size: 0.875rem;">왼쪽에서 대화할 상대를 선택하세요</p>
+              </div>
+            </div>
+          `;
+          
+          // 모든 채팅방 아이템 스타일 초기화
+          document.querySelectorAll('.chat-room-item').forEach(i => {
+            i.style.background = '';
+            i.style.borderLeft = '';
+          });
+          
+          // 채팅방이 하나도 없으면 쿼리 파라미터 없이 채팅 목록으로 이동 (먼저 다이얼로그 제거)
+          // (reload()를 하면 URL의 ?user= 파라미터로 인해 채팅방이 다시 생성됨)
+          if (document.querySelectorAll('.chat-room-item').length === 0) {
+            if (confirmDialog && confirmDialog.parentNode) {
+              document.body.removeChild(confirmDialog);
+            }
+            window.location.href = '/chat/list';
+            return;
+          }
+        } else {
+          alert('채팅방 나가기에 실패했습니다: ' + (data.error || '알 수 없는 오류'));
+        }
+      } catch (error) {
+        console.error('채팅방 나가기 오류:', error);
+        alert('채팅방 나가기 중 오류가 발생했습니다.');
+      }
+      
+      // 다이얼로그 제거 (아직 존재하는 경우에만)
+      if (confirmDialog && confirmDialog.parentNode) {
+        document.body.removeChild(confirmDialog);
+      }
+    });
+  });
+</script>
+
+<%- include('../layout/footer') %>

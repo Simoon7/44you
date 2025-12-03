@@ -1,0 +1,459 @@
+<%- include('../layout/header') %>
+
+<style>
+  /* Main Dashboard with Gradient Background */
+  body {
+    /* 어두운 그라데이션 배경은 공통 CSS에서 처리 */
+  }
+
+  /* body::before는 공통 CSS의 별 레이어로 사용됨 */
+
+  main.container {
+    position: relative;
+    z-index: 1;
+  }
+
+  .dashboard-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--spacing-xl) var(--spacing-xl);
+  }
+</style>
+
+<% if (locals.user) { %>
+  <div class="dashboard-content">
+    <!-- 로그인 사용자 홈 -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h2>🎉 안녕하세요, <%- user.username %>님!</h2>
+      </div>
+      <div class="card-body">
+        <p style="font-size: 16px; line-height: 1.7;">Fortune For You 플랫폼에 오신 것을 환영합니다!</p>
+        <% if (recommendations && recommendations.length > 0) { %>
+          <p style="font-size: 16px; line-height: 1.7; margin-top: 8px;">귀하의 성향을 분석하여 궁합이 잘 맞는 추천 상대들을 소개합니다!</p>
+        <% } else { %>
+          <p style="font-size: 16px; line-height: 1.7; margin-top: 8px;">더 많은 사용자가 가입하면 맞춤 추천을 받으실 수 있습니다.</p>
+        <% } %>
+      </div>
+    </div>
+
+    <% if (recommendations && recommendations.length > 0) { %>
+      <!-- 추천 상대 목록 -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h2>💕 추천 상대</h2>
+          <p style="margin: 0.5rem 0 0 0; color: var(--text-secondary); font-size: 0.9rem;">
+            귀하의 성향과 가장 잘 맞는 상위 3명의 사용자입니다.
+          </p>
+        </div>
+        <div class="recommendations-grid">
+        <% recommendations.forEach((rec, index) => { %>
+          <div class="recommendation-card">
+            <div class="recommendation-header">
+              <div class="rank-badge">#<%= index + 1 %></div>
+              <div class="score-display">
+                <span class="score"><%= Math.round(rec.matchingScore) %></span>
+                <span class="score-label" style="color: white;">점</span>
+              </div>
+            </div>
+
+            <div class="recommendation-body">
+              <h4><%= rec.username %></h4>
+              <div class="user-info">
+                <span class="age"><%= rec.age %>세</span>
+                <span class="gender"><%= rec.gender === 'M' || rec.gender === 'male' ? '남성' : '여성' %></span>
+              </div>
+
+              <% if (rec.traits && rec.traits.length > 0) { %>
+                <div class="traits-section">
+                  <div class="traits-list">
+                    <% rec.traits.slice(0, 3).forEach(trait => { %>
+                      <span class="trait-tag" data-trait="<%= trait %>"><%= trait %></span>
+                    <% }); %>
+                    <% if (rec.traits.length > 3) { %>
+                      <span class="trait-more">+<%= rec.traits.length - 3 %></span>
+                    <% } %>
+                  </div>
+                </div>
+              <% } %>
+            </div>
+
+            <div class="recommendation-footer">
+              <a href="/matching/compatibility?user=<%= rec.id %>" class="btn btn-primary btn-sm">
+                궁합 상세보기
+              </a>
+              <% if (!rec.hasChatRoom || (rec.hasChatRoom && !rec.hasMessages)) { %>
+                <!-- 한번도 채팅하지 않은 상대: 자동메시지 버튼 -->
+                <button type="button" class="btn btn-secondary btn-sm send-auto-message" data-user-id="<%= rec.id %>" data-username="<%= rec.username %>">
+                  자동메시지
+                </button>
+              <% } else { %>
+                <!-- 이미 채팅한 상대: 일반 채팅하기 버튼 -->
+                <a href="/chat/list?user=<%= rec.id %>" class="btn btn-secondary btn-sm">
+                  채팅하기
+                </a>
+              <% } %>
+            </div>
+          </div>
+        <% }); %>
+        </div>
+        <div style="text-align: center; margin-top: var(--spacing-xl); padding-top: var(--spacing-lg); border-top: 1px solid var(--border-color);">
+          <a href="/matching/list" class="btn btn-outline" style="font-size: 16px; padding: 12px 32px;">
+            💕 더 많은 인연 찾기
+          </a>
+        </div>
+      </div>
+    <% } else { %>
+      <!-- 추천 상대가 없을 때 -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h2>💕 인연 찾기</h2>
+        </div>
+        <div class="card-body" style="text-align: center; padding: var(--spacing-2xl);">
+          <p style="font-size: 16px; color: var(--text-secondary); margin-bottom: var(--spacing-lg);">
+            아직 추천할 상대가 없습니다. 더 많은 사용자와의 궁합을 확인해보세요!
+          </p>
+          <a href="/matching/list" class="btn btn-primary" style="font-size: 16px; padding: 12px 32px;">
+            💕 인연 찾기 시작하기
+          </a>
+        </div>
+      </div>
+    <% } %>
+  </div>
+
+<% } else { %>
+  <!-- 비로그인 사용자 랜딩 페이지 -->
+  <div class="hero-section">
+    <div class="hero-card">
+      <h1 class="hero-title">Fortune For You</h1>
+      <p class="hero-subtitle">
+        사주 기반 궁합 분석과 소셜 플랫폼을 한 곳에서!<br>
+        나와 잘 맞는 인연을 찾아보세요.
+      </p>
+      <div class="hero-buttons">
+        <a href="/auth/signup" class="btn btn-primary">지금 시작하기</a>
+        <a href="/auth/login" class="btn btn-outline">로그인</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="feature-cards">
+    <!-- 커뮤니티 카드 -->
+    <div class="feature-card">
+      <div class="feature-icon">📝</div>
+      <h3>커뮤니티</h3>
+      <p>다른 사용자들과 함께 글을 쓰고 댓글로 소통해보세요. 자유로운 게시글 작성과 다양한 댓글 토론을 통해 관심 있는 주제를 탐색할 수 있습니다.</p>
+      <a href="/auth/signup" class="btn btn-outline btn-sm">바로가기</a>
+    </div>
+
+    <!-- 채팅 카드 -->
+    <div class="feature-card">
+      <div class="feature-icon">💬</div>
+      <h3>실시간 채팅</h3>
+      <p>다른 사용자들과 실시간으로 소통할 수 있습니다. 1:1 실시간 채팅과 메시지 히스토리 저장 기능으로 언제든 소통이 가능합니다.</p>
+      <a href="/auth/signup" class="btn btn-outline btn-sm">바로가기</a>
+    </div>
+
+    <!-- 인연 찾기 카드 -->
+    <div class="feature-card">
+      <div class="feature-icon">💕</div>
+      <h3>인연 찾기</h3>
+      <p>사주 기반 궁합 분석으로 나와 잘 맞는 상대를 찾아보세요. 개인 성향 분석과 두 사람의 궁합을 상세하게 확인할 수 있습니다.</p>
+      <a href="/auth/signup" class="btn btn-outline btn-sm">바로가기</a>
+    </div>
+  </div>
+
+<% } %>
+
+<!-- 자동 메시지 선택 팝업창 -->
+<div id="autoMessageModal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
+  <div class="modal-content" style="background-color: white; margin: 10% auto; padding: 0; border: 1px solid #888; width: 90%; max-width: 500px; border-radius: 1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-height: 90vh; overflow-y: auto;">
+    <div class="modal-header" style="padding: 1.5rem; border-bottom: 1px solid var(--border-color); background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); color: white; border-radius: 1rem 1rem 0 0;">
+      <h3 style="margin: 0; font-size: 1.25rem;">💌 채팅 시작하기</h3>
+      <span class="close" style="color: white; float: right; font-size: 28px; font-weight: bold; cursor: pointer; margin-top: -5px;">&times;</span>
+    </div>
+    <div class="modal-body" style="padding: 1.5rem;">
+      <p style="margin-bottom: 1rem; color: var(--text-primary); font-size: 1rem; font-weight: 500;">
+        <span id="modalTargetUsername"></span>님과 대화를 시작하시겠습니까?
+      </p>
+      
+      <!-- 자동메시지 미리보기 영역 -->
+      <div id="autoMessagePreview" style="background: linear-gradient(135deg, #f8f9ff, #e8f2ff); border: 2px solid var(--primary-light); border-radius: 1rem; padding: 1.5rem; margin-bottom: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <h4 style="color: var(--primary-color); margin: 0; font-size: 1.1rem;">💬 자동 인사 메시지</h4>
+          <button 
+            id="refreshAutoMessageBtn" 
+            type="button"
+            style="background: rgba(106, 90, 224, 0.1); border: 1px solid var(--primary-light); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease; padding: 0;"
+            title="다른 메시지 보기"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="23 4 23 10 17 10"></polyline>
+              <polyline points="1 20 1 14 7 14"></polyline>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+            </svg>
+          </button>
+        </div>
+        <p style="color: var(--text-secondary); margin: 0 0 1rem 0; font-size: 0.9rem;">
+          상대방에게 먼저 인사하기 어려우시면 이 메시지를 사용해보세요!
+        </p>
+        <div id="autoMessageContent" style="background: white; padding: 1rem; border-radius: 0.5rem; border-left: 4px solid var(--primary-color); margin-bottom: 0;">
+          <strong style="color: var(--text-primary); display: block; margin-bottom: 0.5rem;">제안 메시지:</strong>
+          <div id="autoMessageText" style="line-height: 1.6; color: var(--text-primary); font-style: italic;">
+            메시지를 불러오는 중...
+          </div>
+        </div>
+      </div>
+      
+      <div class="modal-actions" style="display: flex; flex-direction: column; gap: 0.75rem;">
+        <button id="useAutoMessageBtn" class="btn btn-primary" style="width: 100%; padding: 1rem; font-size: 1rem;">
+          💬 이 메시지로 시작하기
+        </button>
+        <button id="directInputBtn" class="btn btn-outline" style="width: 100%; padding: 1rem; font-size: 1rem;">
+          ✍️ 직접 입력할래요
+        </button>
+        <button id="cancelAutoMessageBtn" class="btn btn-outline" style="width: 100%; padding: 0.75rem; font-size: 0.9rem; margin-top: 0.5rem;">
+          취소
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 성향 설명 스크립트 -->
+<script src="/js/traitDescriptions.js"></script>
+<script>
+  // 성향 툴팁 초기화
+  document.addEventListener('DOMContentLoaded', function() {
+    const traitTags = document.querySelectorAll('.trait-tag[data-trait]');
+    
+    traitTags.forEach(tag => {
+      const trait = tag.getAttribute('data-trait');
+      const description = getTraitDescription(trait);
+      
+      // 툴팁 생성
+      tag.style.cursor = 'help';
+      tag.removeAttribute('title'); // 브라우저 기본 툴팁 제거
+      
+      // 마우스 오버 시 툴팁 표시
+      tag.addEventListener('mouseenter', function(e) {
+        showTraitTooltip(e.target, description);
+      });
+      
+      tag.addEventListener('mouseleave', function() {
+        hideTraitTooltip();
+      });
+    });
+  });
+  
+  // 툴팁 표시 함수
+  function showTraitTooltip(element, text) {
+    // 기존 툴팁 제거
+    const existingTooltip = document.getElementById('trait-tooltip');
+    if (existingTooltip) {
+      existingTooltip.remove();
+    }
+    
+    // 새 툴팁 생성
+    const tooltip = document.createElement('div');
+    tooltip.id = 'trait-tooltip';
+    tooltip.style.cssText = `
+      position: absolute;
+      background: rgba(0, 0, 0, 0.9);
+      color: white;
+      padding: 0.75rem 1rem;
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      max-width: 350px;
+      z-index: 10000;
+      pointer-events: none;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+      line-height: 1.7;
+    `;
+    
+    // 온점(.) 기준으로 문장 분리
+    const sentences = text.split('.').filter(s => s.trim().length > 0);
+    
+    // 각 문장을 별도의 줄로 표시
+    sentences.forEach((sentence, index) => {
+      const sentenceDiv = document.createElement('div');
+      sentenceDiv.style.cssText = `
+        margin-bottom: ${index < sentences.length - 1 ? '0.5rem' : '0'};
+        padding-left: 0.5rem;
+        position: relative;
+      `;
+      sentenceDiv.textContent = sentence.trim() + (index < sentences.length - 1 ? '.' : '');
+      
+      // 불릿 포인트 추가
+      const bullet = document.createElement('span');
+      bullet.textContent = '•';
+      bullet.style.cssText = `
+        position: absolute;
+        left: -0.25rem;
+        color: rgba(255, 255, 255, 0.7);
+        font-weight: bold;
+      `;
+      sentenceDiv.insertBefore(bullet, sentenceDiv.firstChild);
+      
+      tooltip.appendChild(sentenceDiv);
+    });
+    
+    document.body.appendChild(tooltip);
+    
+    // 위치 계산 (툴팁이 DOM에 추가된 후에 크기 계산)
+    setTimeout(() => {
+      const rect = element.getBoundingClientRect();
+      const tooltipRect = tooltip.getBoundingClientRect();
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+      
+      let top = rect.bottom + scrollTop + 10;
+      let left = rect.left + scrollLeft + (rect.width / 2) - (tooltipRect.width / 2);
+      
+      // 화면 밖으로 나가지 않도록 조정
+      if (left < 10) left = 10;
+      if (left + tooltipRect.width > window.innerWidth - 10) {
+        left = window.innerWidth - tooltipRect.width - 10;
+      }
+      
+      tooltip.style.top = top + 'px';
+      tooltip.style.left = left + 'px';
+    }, 0);
+  }
+  
+  // 툴팁 숨기기 함수
+  function hideTraitTooltip() {
+    const tooltip = document.getElementById('trait-tooltip');
+    if (tooltip) {
+      tooltip.remove();
+    }
+  }
+</script>
+
+<!-- 자동 메시지 선택 팝업 스크립트 -->
+<script>
+  let currentTargetUserId = null;
+  let currentAutoMessage = null;
+
+  // 자동 메시지 버튼 클릭 이벤트
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.send-auto-message').forEach(button => {
+      button.addEventListener('click', async function() {
+        currentTargetUserId = this.getAttribute('data-user-id');
+        const username = this.getAttribute('data-username');
+        await showAutoMessageModal(username);
+      });
+    });
+
+    // 모달 닫기 버튼
+    const closeBtn = document.querySelector('#autoMessageModal .close');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', closeAutoMessageModal);
+    }
+
+    // 모달 외부 클릭 시 닫기
+    window.addEventListener('click', (event) => {
+      const modal = document.getElementById('autoMessageModal');
+      if (event.target === modal) {
+        closeAutoMessageModal();
+      }
+    });
+
+    // 취소 버튼
+    const cancelBtn = document.getElementById('cancelAutoMessageBtn');
+    if (cancelBtn) {
+      cancelBtn.addEventListener('click', closeAutoMessageModal);
+    }
+
+    // 새로고침 버튼
+    const refreshBtn = document.getElementById('refreshAutoMessageBtn');
+    if (refreshBtn) {
+      refreshBtn.addEventListener('click', async () => {
+        await loadAutoMessage(true);
+      });
+    }
+
+    // 자동메시지 사용하기 버튼
+    const useAutoMessageBtn = document.getElementById('useAutoMessageBtn');
+    if (useAutoMessageBtn) {
+      useAutoMessageBtn.addEventListener('click', async () => {
+        if (!currentTargetUserId || !currentAutoMessage) return;
+        
+        // 선택한 자동메시지를 세션 스토리지에 저장 (채팅창에서 사용)
+        sessionStorage.setItem(`autoMessage_${currentTargetUserId}`, currentAutoMessage);
+        
+        // 채팅창으로 이동
+        window.location.href = `/chat/list?user=${currentTargetUserId}&autoMessage=true`;
+      });
+    }
+
+    // 직접 입력할래요 버튼
+    const directInputBtn = document.getElementById('directInputBtn');
+    if (directInputBtn) {
+      directInputBtn.addEventListener('click', () => {
+        if (!currentTargetUserId) return;
+        // 직접 입력 모드로 채팅창으로 이동
+        window.location.href = `/chat/list?user=${currentTargetUserId}&autoMessage=false`;
+      });
+    }
+  });
+
+  // 모달 표시 함수
+  async function showAutoMessageModal(username) {
+    const modal = document.getElementById('autoMessageModal');
+    const usernameSpan = document.getElementById('modalTargetUsername');
+    
+    usernameSpan.textContent = username;
+    modal.style.display = 'block';
+    
+    // 자동메시지 로드
+    await loadAutoMessage(false);
+  }
+
+  // 자동메시지 가져오기
+  async function loadAutoMessage(isRefresh = false) {
+    const messageText = document.getElementById('autoMessageText');
+    const refreshBtn = document.getElementById('refreshAutoMessageBtn');
+    
+    if (!messageText) return;
+    
+    if (isRefresh) {
+      // 새로고침 버튼 회전 애니메이션
+      refreshBtn.style.transform = 'rotate(360deg)';
+      refreshBtn.style.transition = 'transform 0.5s ease';
+      refreshBtn.disabled = true;
+    }
+    
+    messageText.textContent = '메시지를 불러오는 중...';
+    
+    try {
+      const response = await fetch('/chat/get-random-auto-message');
+      const data = await response.json();
+      
+      if (data.success && data.message) {
+        currentAutoMessage = data.message;
+        messageText.textContent = data.message;
+      } else {
+        messageText.textContent = '메시지를 불러올 수 없습니다.';
+      }
+    } catch (error) {
+      console.error('자동 메시지 가져오기 오류:', error);
+      messageText.textContent = '메시지를 불러올 수 없습니다.';
+    } finally {
+      if (isRefresh) {
+        setTimeout(() => {
+          refreshBtn.style.transform = 'rotate(0deg)';
+          refreshBtn.disabled = false;
+        }, 500);
+      }
+    }
+  }
+
+  // 모달 닫기 함수
+  function closeAutoMessageModal() {
+    document.getElementById('autoMessageModal').style.display = 'none';
+    currentTargetUserId = null;
+    currentAutoMessage = null;
+  }
+</script>
+

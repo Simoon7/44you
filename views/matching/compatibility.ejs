@@ -1,0 +1,651 @@
+<%- include('../layout/header') %>
+
+<style>
+  /* Compatibility Analysis Page with Gradient Background */
+  body {
+    /* 어두운 그라데이션 배경은 공통 CSS에서 처리 */
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* body::before는 공통 CSS의 별 레이어로 사용됨 */
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--spacing-xl) var(--spacing-xl);
+  }
+
+  .form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(106, 90, 224, 0.1);
+    outline: none;
+  }
+
+  @media (max-width: 768px) {
+    .compatibility-form {
+      grid-template-columns: 1fr !important;
+      gap: var(--spacing-lg) !important;
+    }
+    
+    .form-row {
+      grid-template-columns: repeat(3, 1fr) !important;
+    }
+    
+    .action-buttons {
+      flex-direction: column !important;
+    }
+    
+    .action-buttons .btn {
+      width: 100%;
+    }
+  }
+</style>
+
+<div class="container">
+  <div class="preference-container" style="padding: var(--spacing-xl) 0;">
+    <% if (showResult && compatibilityData) { %>
+      <!-- 분석 결과 표시 모드 -->
+      <div class="compatibility-result-view">
+        <!-- 사용자 정보 비교 -->
+        <div class="users-comparison">
+          <div class="user-card">
+            <h4><%= compatibilityData.currentUser.username %></h4>
+            <div class="user-details">
+              <p><strong>생년월일:</strong> <%= compatibilityData.currentUser.birthYear %>년 <%= compatibilityData.currentUser.birthMonth %>월 <%= compatibilityData.currentUser.birthDay %>일</p>
+              <p><strong>성별:</strong> <%= compatibilityData.currentUser.gender === 'M' || compatibilityData.currentUser.gender === 'male' ? '남성' : '여성' %></p>
+              <p><strong>나이:</strong> <%= new Date().getFullYear() - compatibilityData.currentUser.birthYear %>세</p>
+              <% if (compatibilityData.currentUser.traits && compatibilityData.currentUser.traits.length > 0) { %>
+                <p><strong>성향:</strong></p>
+                <div class="traits-list">
+                  <% compatibilityData.currentUser.traits.forEach(trait => { %>
+                    <span class="trait-tag" data-trait="<%= trait %>"><%= trait %></span>
+                  <% }); %>
+                </div>
+              <% } %>
+            </div>
+          </div>
+
+          <div class="compatibility-connector">
+            <div class="heart-icon">💕</div>
+            <div class="compatibility-score">
+              <div class="score-circle-large">
+                <span class="score-text-large"><%= Math.round(compatibilityData.matchingScore) %></span>
+                <span class="score-label-large">점</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="user-card">
+            <h4><%= compatibilityData.targetUser.username %></h4>
+            <div class="user-details">
+              <p><strong>생년월일:</strong> <%= compatibilityData.targetUser.birthYear %>년 <%= compatibilityData.targetUser.birthMonth %>월 <%= compatibilityData.targetUser.birthDay %>일</p>
+              <p><strong>성별:</strong> <%= compatibilityData.targetUser.gender === 'M' || compatibilityData.targetUser.gender === 'male' ? '남성' : '여성' %></p>
+              <p><strong>나이:</strong> <%= new Date().getFullYear() - compatibilityData.targetUser.birthYear %>세</p>
+              <% if (compatibilityData.targetUser.traits && compatibilityData.targetUser.traits.length > 0) { %>
+                <p><strong>성향:</strong></p>
+                <div class="traits-list">
+                  <% compatibilityData.targetUser.traits.forEach(trait => { %>
+                    <span class="trait-tag" data-trait="<%= trait %>"><%= trait %></span>
+                  <% }); %>
+                </div>
+              <% } %>
+            </div>
+          </div>
+        </div>
+
+        <!-- 궁합 분석 결과 -->
+        <div class="card mb-4">
+          <div class="card-header">
+            <h2>✨ 궁합 분석 결과</h2>
+          </div>
+          <div class="card-body">
+          <div class="compatibility-level" id="compatibility-level">
+            <%
+            const score = compatibilityData.matchingScore;
+            let level, message, color;
+            
+            // ==================== 180 이상 ====================
+            if (score >= 180) {
+              level = '하늘이 내린 천생연분 👑';
+              message = '처음 만난 순간부터 이상하게 잘 맞는 느낌을 줄 수 있는 궁합입니다. 말투나 표현 방식이 비슷해, 깊은 이야기를 하지 않아도 서로의 기분을 자연스럽게 읽게 되는 편입니다. 일상적인 농담이나 사소한 대화에서도 공감대가 쉽게 만들어지고, 함께 있을 때 안정감과 설렘이 동시에 유지될 가능성이 높습니다.';
+              color = '#1A237E';
+            }
+            // ==================== 165 이상 ====================
+            else if (score >= 165) {
+              level = '운명에 가까운 궁합 💍';
+              message = '가치관과 관계를 대하는 태도가 비슷해, 중요한 이야기를 나눌 때에도 서로를 이해하기 쉬운 궁합입니다. 서로 다른 점이 있어도 크게 부딪히지 않고, 자연스럽게 조율되는 흐름을 갖고 있습니다. 함께 미래를 이야기할 때 부담감보다는 기대감이 먼저 떠오르기 쉬운 조합입니다.';
+              color = '#004D40';
+            }
+            // ==================== 150 이상 ====================
+            else if (score >= 150) {
+              level = '완벽에 가까운 궁합 💎';
+              message = '성향과 생활 패턴이 잘 맞아, 함께 시간을 보낼 때 에너지 소모가 적고 편안함이 크게 느껴지는 궁합입니다. 의견 차이가 생기더라도 감정을 상하게 하기보다, 서로의 입장을 차분히 듣고 조율할 수 있는 여지가 많습니다. 관계가 길어질수록 서로에 대한 믿음과 의지가 커질 수 있는 조합입니다.';
+              color = '#1B5E20';
+            }
+            // ==================== 135 이상 ====================
+            else if (score >= 135) {
+              level = '매우 좋은 궁합 💖';
+              message = '대부분의 상황에서 리듬이 잘 맞고, 서로의 말과 행동이 크게 부담되지 않는 관계입니다. 상대의 장점을 자연스럽게 보게 되며, 단점도 크게 문제 삼지 않고 받아들이기 쉬운 편입니다. 함께 있을 때 마음이 편안해지고, 무리하지 않아도 관계가 조금씩 깊어질 가능성이 높은 궁합입니다.';
+              color = '#2E7D32';
+            }
+            // ==================== 120 이상 ====================
+            else if (score >= 120) {
+              level = '좋은 궁합 🙂';
+              message = '대화가 자연스럽게 이어지고, 큰 갈등 없이 편안하게 만남을 이어갈 수 있는 궁합입니다. 서로의 일상을 나누는 데 부담이 적고, 가벼운 관심 표현만으로도 관계가 조금씩 발전할 여지가 있습니다. 특별히 극적인 케미는 아닐 수 있지만, 안정적인 흐름을 선호하는 사람에게 잘 맞는 조합입니다.';
+              color = '#43A047';
+            }
+            // ==================== 105 이상 ====================
+            else if (score >= 105) {
+              level = '알아갈수록 편해지는 궁합 🤝';
+              message = '처음에는 다소 거리를 두고 관찰하게 될 수 있지만, 대화를 이어가다 보면 점점 편해지는 궁합입니다. 서로의 표현 방식을 이해하는 데 약간의 시간이 필요하지만, 일단 한 번 익숙해지면 안정감이 커질 가능성이 있습니다. 서두르지 않고 천천히 알아가는 흐름에 어울리는 조합입니다.';
+              color = '#689F38';
+            }
+            // ==================== 95 이상 ====================
+            else if (score >= 95) {
+              level = '다른 점이 자연스러운 궁합 🧩';
+              message = '생활 스타일이나 취향에서 서로 다른 부분이 눈에 띌 수 있지만, 그 차이가 곧바로 불편함으로 이어지지 않는 관계입니다. “나와 조금 다르네”라는 느낌이 호기심이나 흥미로 연결될 수 있습니다. 차이를 부정하기보다 자연스러운 개성으로 받아들인다면, 의외로 잘 맞는 지점을 발견할 수 있는 궁합입니다.';
+              color = '#FFC107';
+            }
+            // ==================== 85 이상 ====================
+            else if (score >= 85) {
+              level = '조금 거리감이 있는 궁합 ⚠️';
+              message = '대화의 템포나 관심사에서 미묘한 거리감이 느껴질 수 있는 조합입니다. 서로에게 호감이 있어도, 한쪽이 먼저 다가가거나 분위기를 이끌어야 한다고 느낄 가능성이 있습니다. 천천히 상대의 반응을 살펴보면서 간격을 줄여가는 흐름이 어울리는 궁합입니다.';
+              color = '#FF7043';
+            }
+            // ==================== 75 이상 ====================
+            else if (score >= 75) {
+              level = '노력이 조금 필요한 궁합 🛠️';
+              message = '자연스럽게 잘 맞는다기보다는, 서로를 이해하기 위한 작은 노력이 관계에 도움이 되는 궁합입니다. 표현 방식이나 만남의 빈도에서 기대가 다를 수 있어, 한 번쯤 솔직한 대화가 필요할 수 있습니다. 노력의 강도가 크지 않더라도, 방향만 맞으면 충분히 편안한 관계로 이어질 여지는 있습니다.';
+              color = '#E65100';
+            }
+            // ==================== 65 이상 ====================
+            else if (score >= 65) {
+              level = '속도가 다른 궁합 ⏳';
+              message = '호감이 쌓이는 속도나 관계를 진전시키고 싶은 타이밍에서 차이가 나타나기 쉬운 궁합입니다. 한 사람은 빠르게 친해지고 싶어도, 다른 한 사람은 천천히 단계를 밟고 싶어할 수 있습니다. 이 차이를 조급함보다는 스타일의 차이로 받아들일 수 있다면, 부담을 줄이는 데 도움이 됩니다.';
+              color = '#BF5F00';
+            }
+            // ==================== 55 이상 ====================
+            else if (score >= 55) {
+              level = '다른 매력이 있는 궁합 🔥';
+              message = '성향이나 취향이 꽤 다른 편이라, 처음에는 “나와는 좀 다르다”는 느낌이 강하게 올 수 있는 조합입니다. 하지만 그만큼 상대에게서 평소에 보지 못한 모습이나 새로운 관점을 발견하게 될 여지도 있습니다. 공통점보다는 차이에서 매력을 찾는 스타일이라면 흥미롭게 느껴질 수 있는 궁합입니다.';
+              color = '#AD1457';
+            }
+            // ==================== 45 이상 ====================
+            else if (score >= 45) {
+              level = '취향이 엇갈릴 수 있는 궁합 🎭';
+              message = '어떤 대화를 즐기는지, 어떤 만남을 선호하는지에서 생각보다 큰 차이가 느껴질 수 있는 관계입니다. 함께 있어도 각자가 원하는 분위기가 조금씩 다르게 흘러갈 수 있습니다. 서로의 취향을 바꾸려 하기보다는, 어느 정도는 다름을 인정하고 맞출 수 있는지 판단해 볼 필요가 있는 궁합입니다.';
+              color = '#E53935';
+            }
+            // ==================== 35 이상 ====================
+            else if (score >= 35) {
+              level = '호흡이 맞춰지는 시간이 필요한 궁합 🍃';
+              message = '처음 만났을 때는 대화가 어색하거나, 서로에게 어떤 톤과 표현이 잘 맞는지 감이 잘 오지 않을 수 있습니다. 다만 시간을 두고 조금씩 호흡을 맞춰 간다면, 완전히 어울리지 못하는 관계라고 단정할 필요는 없습니다. 서두르지 않고 천천히 흐름을 살펴볼 때 장단점이 분명해지는 궁합입니다.';
+              color = '#C62828';
+            }
+            // ==================== 25 이상 ====================
+            else if (score >= 25) {
+              level = '감정의 방향을 탐색하는 궁합 🌀';
+              message = '서로에게 느끼는 감정이 호감인지, 그냥 편한 상대인지 스스로도 확신하기 어려운 단계일 수 있습니다. 대화를 나누면서 좋은 점과 신경 쓰이는 점이 번갈아 보일 가능성이 있습니다. 조금 더 시간을 두고 지켜봐야 관계의 방향이 더 분명해지는 궁합입니다.';
+              color = '#AD1457';
+            }
+            // ==================== 1 이상 ====================
+            else if (score >= 1) {
+              level = '서로를 알아가는 데 시간이 더 필요한 궁합 🥀';
+              message = '표현 방식과 기대치가 쉽게 맞춰지지 않아, 가까워지는 과정에서 어색함이나 부담이 생기기 쉬운 조합입니다. 서두르기보다는 가볍게 연락을 이어가며 서로의 리듬이 얼마나 다른지 살펴볼 필요가 있습니다. 관계를 억지로 끌고 가기보다는, 편안한 거리에서 바라볼 때 더 객관적으로 느껴질 수 있는 궁합입니다.';
+              color = '#8E0038';
+            }
+            // ==================== 0 이하 ====================
+            else {
+              level = '많은 배려가 필요한 사이 🚨';
+              message = '감정 표현, 관계의 속도, 기대하는 깊이 등에서 차이가 크게 느껴질 수 있는 조합입니다. 서로에게 다가가고 싶은 마음이 있더라도, 방식이 맞지 않아 피로감이나 부담이 쌓이기 쉬울 수 있습니다. 이 점수를 하나의 참고로 두고, 서로의 차이를 얼마나 받아들일 수 있는지 차분히 생각해 볼 필요가 있는 관계입니다.';
+              color = '#7F0000';
+            }             
+            %>
+            <span style="color: <%= color %>; font-weight: bold;"><%= level %></span>
+          </div>
+            <div class="result-message" style="margin-top: var(--spacing-lg);"><%= message %></div>
+          </div>
+        </div>
+
+        <div class="action-buttons" style="display: flex; gap: var(--spacing-md); justify-content: center; margin-top: var(--spacing-2xl);">
+          <a href="/chat/list" class="btn btn-primary" style="font-size: 15px; padding: 10px 24px; border-radius: 8px; font-weight: 600;">채팅하기</a>
+          <a href="/" class="btn btn-primary" style="font-size: 15px; padding: 10px 24px; border-radius: 8px; font-weight: 600;">메인으로 돌아가기</a>
+        </div>
+      </div>
+    <% } else { %>
+      <!-- 분석 모드 -->
+      <div class="card mb-4" style="max-width: 900px; margin: 0 auto;">
+        <div class="card-header" style="padding: var(--spacing-xl); border-bottom: 2px solid var(--border-color);">
+          <h2 style="margin: 0; font-size: 24px; font-weight: 700; color: var(--text-primary); margin-bottom: var(--spacing-sm);">💕 두 사람 궁합 분석</h2>
+          <p style="margin: 0; color: var(--text-primary); font-size: 16px; font-weight: 500; line-height: 1.6;">
+            두 사람의 생년월일과 성별을 입력하여 궁합을 분석해보세요
+          </p>
+        </div>
+        <div style="padding: var(--spacing-2xl);">
+          <div class="compatibility-form" style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-2xl);">
+            <!-- 첫 번째 사람 -->
+            <div class="person-form" style="padding: var(--spacing-xl); background-color: var(--bg-page); border-radius: var(--border-radius); border: 1px solid var(--border-color);">
+              <h4 style="margin: 0 0 var(--spacing-lg) 0; font-size: 18px; font-weight: 600; color: var(--text-primary);">첫 번째 사람</h4>
+              <div class="form-row" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--spacing-sm); margin-bottom: var(--spacing-md);">
+                <div class="form-group">
+                  <label for="person1-year" class="form-label" style="display: block; margin-bottom: var(--spacing-xs); font-size: 14px; font-weight: 600; color: var(--text-primary);">년도</label>
+                  <input type="number" id="person1-year" class="form-control" placeholder="예: 1995" min="1900" max="2025" style="width: 100%; height: 44px; padding: 0 var(--spacing-sm); font-size: 14px; border-radius: 8px; border: 1px solid var(--border-color);">
+                </div>
+                <div class="form-group">
+                  <label for="person1-month" class="form-label" style="display: block; margin-bottom: var(--spacing-xs); font-size: 14px; font-weight: 600; color: var(--text-primary);">월</label>
+                  <input type="number" id="person1-month" class="form-control" placeholder="1-12" min="1" max="12" style="width: 100%; height: 44px; padding: 0 var(--spacing-sm); font-size: 14px; border-radius: 8px; border: 1px solid var(--border-color);">
+                </div>
+                <div class="form-group">
+                  <label for="person1-day" class="form-label" style="display: block; margin-bottom: var(--spacing-xs); font-size: 14px; font-weight: 600; color: var(--text-primary);">일</label>
+                  <input type="number" id="person1-day" class="form-control" placeholder="1-31" min="1" max="31" style="width: 100%; height: 44px; padding: 0 var(--spacing-sm); font-size: 14px; border-radius: 8px; border: 1px solid var(--border-color);">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="person1-gender" class="form-label" style="display: block; margin-bottom: var(--spacing-xs); font-size: 14px; font-weight: 600; color: var(--text-primary);">성별</label>
+                <select id="person1-gender" class="form-control" style="width: 100%; height: 44px; padding: 0 var(--spacing-sm); font-size: 14px; border-radius: 8px; border: 1px solid var(--border-color);">
+                  <option value="">선택하세요</option>
+                  <option value="남">남성</option>
+                  <option value="여">여성</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- 두 번째 사람 -->
+            <div class="person-form" style="padding: var(--spacing-xl); background-color: var(--bg-page); border-radius: var(--border-radius); border: 1px solid var(--border-color);">
+              <h4 style="margin: 0 0 var(--spacing-lg) 0; font-size: 18px; font-weight: 600; color: var(--text-primary);">두 번째 사람</h4>
+              <div class="form-row" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--spacing-sm); margin-bottom: var(--spacing-md);">
+                <div class="form-group">
+                  <label for="person2-year" class="form-label" style="display: block; margin-bottom: var(--spacing-xs); font-size: 14px; font-weight: 600; color: var(--text-primary);">년도</label>
+                  <input type="number" id="person2-year" class="form-control" placeholder="예: 1995" min="1900" max="2025" style="width: 100%; height: 44px; padding: 0 var(--spacing-sm); font-size: 14px; border-radius: 8px; border: 1px solid var(--border-color);">
+                </div>
+                <div class="form-group">
+                  <label for="person2-month" class="form-label" style="display: block; margin-bottom: var(--spacing-xs); font-size: 14px; font-weight: 600; color: var(--text-primary);">월</label>
+                  <input type="number" id="person2-month" class="form-control" placeholder="1-12" min="1" max="12" style="width: 100%; height: 44px; padding: 0 var(--spacing-sm); font-size: 14px; border-radius: 8px; border: 1px solid var(--border-color);">
+                </div>
+                <div class="form-group">
+                  <label for="person2-day" class="form-label" style="display: block; margin-bottom: var(--spacing-xs); font-size: 14px; font-weight: 600; color: var(--text-primary);">일</label>
+                  <input type="number" id="person2-day" class="form-control" placeholder="1-31" min="1" max="31" style="width: 100%; height: 44px; padding: 0 var(--spacing-sm); font-size: 14px; border-radius: 8px; border: 1px solid var(--border-color);">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="person2-gender" class="form-label" style="display: block; margin-bottom: var(--spacing-xs); font-size: 14px; font-weight: 600; color: var(--text-primary);">성별</label>
+                <select id="person2-gender" class="form-control" style="width: 100%; height: 44px; padding: 0 var(--spacing-sm); font-size: 14px; border-radius: 8px; border: 1px solid var(--border-color);">
+                  <option value="">선택하세요</option>
+                  <option value="남">남성</option>
+                  <option value="여">여성</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="padding: var(--spacing-md) var(--spacing-xl) var(--spacing-xl); border-top: 1px solid var(--border-color);">
+          <button type="button" class="btn btn-primary btn-block" id="analyze-btn" style="height: 48px; font-size: 16px; font-weight: 600; border-radius: 8px;">궁합 분석하기</button>
+        </div>
+      </div>
+
+    <!-- 분석 결과 표시 영역 -->
+    <div id="result-container" class="result-container" style="display: none; margin-top: var(--spacing-xl);">
+      <div class="card">
+        <div class="card-header">
+          <h2>✨ 궁합 분석 결과</h2>
+        </div>
+        <div class="card-body">
+        <div class="score-display">
+          <div class="score-circle" id="score-circle">
+            <span class="score-text" id="score-text">--</span>
+            <span class="score-label">점</span>
+          </div>
+        </div>
+          <div class="compatibility-level" id="compatibility-level"></div>
+          <div class="result-message" id="result-message" style="margin-top: var(--spacing-lg);"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 로딩 표시 -->
+    <div id="loading-container" class="loading-container" style="display: none; text-align: center; padding: var(--spacing-2xl);">
+      <div class="loading" style="margin: 0 auto var(--spacing-md);"></div>
+      <p style="color: var(--text-secondary); font-weight: 500;">궁합을 분석하고 있습니다...</p>
+    </div>
+
+    <!-- 에러 메시지 -->
+    <div id="error-container" class="error-container" style="display: none; margin-top: var(--spacing-xl);">
+      <p class="error-message" id="error-message"></p>
+    </div>
+    <% } %>
+  </div>
+    </div>
+
+    <%- include('../layout/footer') %>
+
+    <!-- 성향 설명 스크립트 -->
+    <script src="/js/traitDescriptions.js"></script>
+    <script>
+// 궁합 분석 기능
+const analyzeBtn = document.getElementById('analyze-btn');
+if (analyzeBtn) {
+  analyzeBtn.addEventListener('click', async function() {
+  // 입력값 검증
+  const person1 = {
+    year: document.getElementById('person1-year').value,
+    month: document.getElementById('person1-month').value,
+    day: document.getElementById('person1-day').value,
+    gender: document.getElementById('person1-gender').value
+  };
+
+  const person2 = {
+    year: document.getElementById('person2-year').value,
+    month: document.getElementById('person2-month').value,
+    day: document.getElementById('person2-day').value,
+    gender: document.getElementById('person2-gender').value
+  };
+
+  // 필수 필드 검증
+  if (!person1.year || !person1.month || !person1.day || !person1.gender ||
+      !person2.year || !person2.month || !person2.day || !person2.gender) {
+    showError('모든 정보를 입력해주세요.');
+    return;
+  }
+
+  // 로딩 표시
+  showLoading();
+
+  try {
+    const response = await fetch('/matching/compat', {
+                    method: 'POST',
+                    headers: {
+        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+        a: person1,
+        b: person2,
+        useLunar: true,
+        debug: false
+                    })
+                });
+
+                const data = await response.json();
+
+    if (data.ok) {
+      showResult(data.compat.matching_score);
+                } else {
+      showError(data.error || '분석 중 오류가 발생했습니다.');
+                }
+
+            } catch (error) {
+    console.error('API 호출 오류:', error);
+    showError('네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+  } finally {
+    hideLoading();
+  }
+  });
+}
+
+// 결과 표시 함수들
+function showResult(score) {
+  hideError();
+  hideLoading();
+
+  const scoreText = document.getElementById('score-text');
+  const compatibilityLevel = document.getElementById('compatibility-level');
+  const resultMessage = document.getElementById('result-message');
+  const scoreCircle = document.getElementById('score-circle');
+
+  // 점수 표시
+  scoreText.textContent = Math.round(score);
+
+  // 궁합 레벨 결정 (궁합 상세보기와 동일한 로직)
+  let level, message, color;
+  
+  // ==================== 180 이상 ====================
+  if (score >= 180) {
+    level = '하늘이 내린 천생연분 👑';
+    message = '처음 만난 순간부터 이상하게 잘 맞는 느낌을 줄 수 있는 궁합입니다. 말투나 표현 방식이 비슷해, 깊은 이야기를 하지 않아도 서로의 기분을 자연스럽게 읽게 되는 편입니다. 일상적인 농담이나 사소한 대화에서도 공감대가 쉽게 만들어지고, 함께 있을 때 안정감과 설렘이 동시에 유지될 가능성이 높습니다.';
+    color = '#1A237E';
+  }
+  // ==================== 165 이상 ====================
+  else if (score >= 165) {
+    level = '운명에 가까운 궁합 💍';
+    message = '가치관과 관계를 대하는 태도가 비슷해, 중요한 이야기를 나눌 때에도 서로를 이해하기 쉬운 궁합입니다. 서로 다른 점이 있어도 크게 부딪히지 않고, 자연스럽게 조율되는 흐름을 갖고 있습니다. 함께 미래를 이야기할 때 부담감보다는 기대감이 먼저 떠오르기 쉬운 조합입니다.';
+    color = '#004D40';
+  }
+  // ==================== 150 이상 ====================
+  else if (score >= 150) {
+    level = '완벽에 가까운 궁합 💎';
+    message = '성향과 생활 패턴이 잘 맞아, 함께 시간을 보낼 때 에너지 소모가 적고 편안함이 크게 느껴지는 궁합입니다. 의견 차이가 생기더라도 감정을 상하게 하기보다, 서로의 입장을 차분히 듣고 조율할 수 있는 여지가 많습니다. 관계가 길어질수록 서로에 대한 믿음과 의지가 커질 수 있는 조합입니다.';
+    color = '#1B5E20';
+  }
+  // ==================== 135 이상 ====================
+  else if (score >= 135) {
+    level = '매우 좋은 궁합 💖';
+    message = '대부분의 상황에서 리듬이 잘 맞고, 서로의 말과 행동이 크게 부담되지 않는 관계입니다. 상대의 장점을 자연스럽게 보게 되며, 단점도 크게 문제 삼지 않고 받아들이기 쉬운 편입니다. 함께 있을 때 마음이 편안해지고, 무리하지 않아도 관계가 조금씩 깊어질 가능성이 높은 궁합입니다.';
+    color = '#2E7D32';
+  }
+  // ==================== 120 이상 ====================
+  else if (score >= 120) {
+    level = '좋은 궁합 🙂';
+    message = '대화가 자연스럽게 이어지고, 큰 갈등 없이 편안하게 만남을 이어갈 수 있는 궁합입니다. 서로의 일상을 나누는 데 부담이 적고, 가벼운 관심 표현만으로도 관계가 조금씩 발전할 여지가 있습니다. 특별히 극적인 케미는 아닐 수 있지만, 안정적인 흐름을 선호하는 사람에게 잘 맞는 조합입니다.';
+    color = '#43A047';
+  }
+  // ==================== 105 이상 ====================
+  else if (score >= 105) {
+    level = '알아갈수록 편해지는 궁합 🤝';
+    message = '처음에는 다소 거리를 두고 관찰하게 될 수 있지만, 대화를 이어가다 보면 점점 편해지는 궁합입니다. 서로의 표현 방식을 이해하는 데 약간의 시간이 필요하지만, 일단 한 번 익숙해지면 안정감이 커질 가능성이 있습니다. 서두르지 않고 천천히 알아가는 흐름에 어울리는 조합입니다.';
+    color = '#689F38';
+  }
+  // ==================== 95 이상 ====================
+  else if (score >= 95) {
+    level = '다른 점이 자연스러운 궁합 🧩';
+    message = '생활 스타일이나 취향에서 서로 다른 부분이 눈에 띌 수 있지만, 그 차이가 곧바로 불편함으로 이어지지 않는 관계입니다. "나와 조금 다르네"라는 느낌이 호기심이나 흥미로 연결될 수 있습니다. 차이를 부정하기보다 자연스러운 개성으로 받아들인다면, 의외로 잘 맞는 지점을 발견할 수 있는 궁합입니다.';
+    color = '#FFC107';
+  }
+  // ==================== 85 이상 ====================
+  else if (score >= 85) {
+    level = '조금 거리감이 있는 궁합 ⚠️';
+    message = '대화의 템포나 관심사에서 미묘한 거리감이 느껴질 수 있는 조합입니다. 서로에게 호감이 있어도, 한쪽이 먼저 다가가거나 분위기를 이끌어야 한다고 느낄 가능성이 있습니다. 천천히 상대의 반응을 살펴보면서 간격을 줄여가는 흐름이 어울리는 궁합입니다.';
+    color = '#FF7043';
+  }
+  // ==================== 75 이상 ====================
+  else if (score >= 75) {
+    level = '노력이 조금 필요한 궁합 🛠️';
+    message = '자연스럽게 잘 맞는다기보다는, 서로를 이해하기 위한 작은 노력이 관계에 도움이 되는 궁합입니다. 표현 방식이나 만남의 빈도에서 기대가 다를 수 있어, 한 번쯤 솔직한 대화가 필요할 수 있습니다. 노력의 강도가 크지 않더라도, 방향만 맞으면 충분히 편안한 관계로 이어질 여지는 있습니다.';
+    color = '#E65100';
+  }
+  // ==================== 65 이상 ====================
+  else if (score >= 65) {
+    level = '속도가 다른 궁합 ⏳';
+    message = '호감이 쌓이는 속도나 관계를 진전시키고 싶은 타이밍에서 차이가 나타나기 쉬운 궁합입니다. 한 사람은 빠르게 친해지고 싶어도, 다른 한 사람은 천천히 단계를 밟고 싶어할 수 있습니다. 이 차이를 조급함보다는 스타일의 차이로 받아들일 수 있다면, 부담을 줄이는 데 도움이 됩니다.';
+    color = '#BF5F00';
+  }
+  // ==================== 55 이상 ====================
+  else if (score >= 55) {
+    level = '다른 매력이 있는 궁합 🔥';
+    message = '성향이나 취향이 꽤 다른 편이라, 처음에는 "나와는 좀 다르다"는 느낌이 강하게 올 수 있는 조합입니다. 하지만 그만큼 상대에게서 평소에 보지 못한 모습이나 새로운 관점을 발견하게 될 여지도 있습니다. 공통점보다는 차이에서 매력을 찾는 스타일이라면 흥미롭게 느껴질 수 있는 궁합입니다.';
+    color = '#AD1457';
+  }
+  // ==================== 45 이상 ====================
+  else if (score >= 45) {
+    level = '취향이 엇갈릴 수 있는 궁합 🎭';
+    message = '어떤 대화를 즐기는지, 어떤 만남을 선호하는지에서 생각보다 큰 차이가 느껴질 수 있는 관계입니다. 함께 있어도 각자가 원하는 분위기가 조금씩 다르게 흘러갈 수 있습니다. 서로의 취향을 바꾸려 하기보다는, 어느 정도는 다름을 인정하고 맞출 수 있는지 판단해 볼 필요가 있는 궁합입니다.';
+    color = '#E53935';
+  }
+  // ==================== 35 이상 ====================
+  else if (score >= 35) {
+    level = '호흡이 맞춰지는 시간이 필요한 궁합 🍃';
+    message = '처음 만났을 때는 대화가 어색하거나, 서로에게 어떤 톤과 표현이 잘 맞는지 감이 잘 오지 않을 수 있습니다. 다만 시간을 두고 조금씩 호흡을 맞춰 간다면, 완전히 어울리지 못하는 관계라고 단정할 필요는 없습니다. 서두르지 않고 천천히 흐름을 살펴볼 때 장단점이 분명해지는 궁합입니다.';
+    color = '#C62828';
+  }
+  // ==================== 25 이상 ====================
+  else if (score >= 25) {
+    level = '감정의 방향을 탐색하는 궁합 🌀';
+    message = '서로에게 느끼는 감정이 호감인지, 그냥 편한 상대인지 스스로도 확신하기 어려운 단계일 수 있습니다. 대화를 나누면서 좋은 점과 신경 쓰이는 점이 번갈아 보일 가능성이 있습니다. 조금 더 시간을 두고 지켜봐야 관계의 방향이 더 분명해지는 궁합입니다.';
+    color = '#AD1457';
+  }
+  // ==================== 1 이상 ====================
+  else if (score >= 1) {
+    level = '서로를 알아가는 데 시간이 더 필요한 궁합 🥀';
+    message = '표현 방식과 기대치가 쉽게 맞춰지지 않아, 가까워지는 과정에서 어색함이나 부담이 생기기 쉬운 조합입니다. 서두르기보다는 가볍게 연락을 이어가며 서로의 리듬이 얼마나 다른지 살펴볼 필요가 있습니다. 관계를 억지로 끌고 가기보다는, 편안한 거리에서 바라볼 때 더 객관적으로 느껴질 수 있는 궁합입니다.';
+    color = '#8E0038';
+  }
+  // ==================== 0 이하 ====================
+  else {
+    level = '많은 배려가 필요한 사이 🚨';
+    message = '감정 표현, 관계의 속도, 기대하는 깊이 등에서 차이가 크게 느껴질 수 있는 조합입니다. 서로에게 다가가고 싶은 마음이 있더라도, 방식이 맞지 않아 피로감이나 부담이 쌓이기 쉬울 수 있습니다. 이 점수를 하나의 참고로 두고, 서로의 차이를 얼마나 받아들일 수 있는지 차분히 생각해 볼 필요가 있는 관계입니다.';
+    color = '#7F0000';
+  }
+
+  // 결과 표시
+  compatibilityLevel.innerHTML = '<span style="color: ' + color + '; font-weight: bold;">' + level + '</span>';
+  resultMessage.textContent = message;
+  scoreCircle.style.borderColor = color;
+
+  // 결과 컨테이너 표시
+  document.getElementById('result-container').style.display = 'block';
+}
+
+function showLoading() {
+  document.getElementById('loading-container').style.display = 'block';
+}
+
+function hideLoading() {
+  document.getElementById('loading-container').style.display = 'none';
+}
+
+function showError(message) {
+  hideResult();
+  hideLoading();
+
+  document.getElementById('error-message').textContent = message;
+  document.getElementById('error-container').style.display = 'block';
+}
+
+function hideError() {
+  document.getElementById('error-container').style.display = 'none';
+}
+
+function hideResult() {
+  document.getElementById('result-container').style.display = 'none';
+}
+
+// 툴팁 표시 함수
+function showTraitTooltip(element, text) {
+  // 기존 툴팁 제거
+  const existingTooltip = document.getElementById('trait-tooltip');
+  if (existingTooltip) {
+    existingTooltip.remove();
+  }
+  
+  // 새 툴팁 생성
+  const tooltip = document.createElement('div');
+  tooltip.id = 'trait-tooltip';
+  tooltip.style.cssText = `
+    position: absolute;
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    max-width: 350px;
+    z-index: 10000;
+    pointer-events: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    line-height: 1.7;
+  `;
+  
+  // 온점(.) 기준으로 문장 분리
+  const sentences = text.split('.').filter(s => s.trim().length > 0);
+  
+  // 각 문장을 별도의 줄로 표시
+  sentences.forEach((sentence, index) => {
+    const sentenceDiv = document.createElement('div');
+    sentenceDiv.style.cssText = `
+      margin-bottom: ${index < sentences.length - 1 ? '0.5rem' : '0'};
+      padding-left: 0.5rem;
+      position: relative;
+    `;
+    sentenceDiv.textContent = sentence.trim() + (index < sentences.length - 1 ? '.' : '');
+    
+    // 불릿 포인트 추가
+    const bullet = document.createElement('span');
+    bullet.textContent = '•';
+    bullet.style.cssText = `
+      position: absolute;
+      left: -0.25rem;
+      color: rgba(255, 255, 255, 0.7);
+      font-weight: bold;
+    `;
+    sentenceDiv.insertBefore(bullet, sentenceDiv.firstChild);
+    
+    tooltip.appendChild(sentenceDiv);
+  });
+  
+  document.body.appendChild(tooltip);
+  
+  // 위치 계산 (툴팁이 DOM에 추가된 후에 크기 계산)
+  setTimeout(() => {
+    const rect = element.getBoundingClientRect();
+    const tooltipRect = tooltip.getBoundingClientRect();
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+    
+    let top = rect.bottom + scrollTop + 10;
+    let left = rect.left + scrollLeft + (rect.width / 2) - (tooltipRect.width / 2);
+    
+    // 화면 밖으로 나가지 않도록 조정
+    if (left < 10) left = 10;
+    if (left + tooltipRect.width > window.innerWidth - 10) {
+      left = window.innerWidth - tooltipRect.width - 10;
+    }
+    
+    tooltip.style.top = top + 'px';
+    tooltip.style.left = left + 'px';
+  }, 0);
+}
+
+// 툴팁 숨기기 함수
+function hideTraitTooltip() {
+  const tooltip = document.getElementById('trait-tooltip');
+  if (tooltip) {
+    tooltip.remove();
+  }
+}
+
+// 성향 툴팁 초기화
+document.addEventListener('DOMContentLoaded', function() {
+  // getTraitDescription 함수가 로드될 때까지 대기
+  function initTraitTooltips() {
+    if (typeof getTraitDescription === 'undefined') {
+      setTimeout(initTraitTooltips, 50);
+      return;
+    }
+    
+    const traitTags = document.querySelectorAll('.trait-tag[data-trait]');
+    
+    traitTags.forEach(tag => {
+      const trait = tag.getAttribute('data-trait');
+      if (!trait) return;
+      
+      const description = getTraitDescription(trait);
+      
+      // 툴팁 생성
+      tag.style.cursor = 'help';
+      tag.removeAttribute('title'); // 브라우저 기본 툴팁 제거
+      
+      // 마우스 오버 시 툴팁 표시
+      tag.addEventListener('mouseenter', function(e) {
+        showTraitTooltip(e.target, description);
+      });
+      
+      tag.addEventListener('mouseleave', function() {
+        hideTraitTooltip();
+      });
+    });
+  }
+  
+  initTraitTooltips();
+});
+    </script>

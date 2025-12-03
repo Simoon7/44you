@@ -1,0 +1,111 @@
+.start-container {
+  position: fixed;
+  inset: 0;
+  background-color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.start-mobile-wrapper {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  max-width: 700px;
+  padding: 0 10px;
+}
+
+.start-screen {
+  position: relative;
+  height: 100%;
+  background-color: #F3F0FF;
+  overflow: hidden;
+  border-left: 2px solid #9ca3af;
+  border-right: 2px solid #9ca3af;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.start-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.25rem 0.5rem;
+}
+
+.start-header-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #B8A7FF;
+}
+
+.start-tab-menu {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0.25rem 1.5rem;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.start-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 1.5rem;
+  height: calc(100% - 64px);
+}
+
+.start-title-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.start-title-text {
+  text-align: center;
+}
+
+.start-title {
+  font-size: 2.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.start-subtitle {
+  color: #6b7280;
+  margin-bottom: 2rem;
+}
+
+.start-signup-button {
+  width: 100%;
+  max-width: 28rem;
+  background-color: #7B4EBF;
+  color: white;
+  padding: 1rem;
+  border-radius: 9999px;
+  font-size: 1.125rem;
+  margin-bottom: 1rem;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.3s;
+}
+
+.start-signup-button:hover {
+  background-color: #6B45B5;
+}
+
+.start-login-text {
+  color: #6b7280;
+  margin-bottom: 3rem;
+}
+
+.start-login-link {
+  color: #7B4EBF;
+  text-decoration: underline;
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-size: inherit;
+}

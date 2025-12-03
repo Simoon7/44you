@@ -1,0 +1,288 @@
+<%- include('../layout/header') %>
+
+<style>
+  /* Personal Analysis Page with Gradient Background */
+  body {
+    /* 어두운 그라데이션 배경은 공통 CSS에서 처리 */
+    margin: 0;
+    padding: 0;
+  }
+
+  /* body::before는 공통 CSS의 별 레이어로 사용됨 */
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--spacing-xl) var(--spacing-xl);
+  }
+</style>
+
+<div class="container">
+  <div class="analysis-container">
+    <div class="card" style="max-width: 600px; margin: 0 auto;">
+      <div class="card-header" style="text-align: center; border: none; padding: var(--spacing-xl) var(--spacing-xl) var(--spacing-lg);">
+        <h1 class="analysis-title">✨ 개인 성향 분석</h1>
+        <p class="analysis-subtitle">당신의 생년월일을 입력하면 개인 성향을 분석해드립니다</p>
+      </div>
+
+      <form id="analysisForm" style="padding: var(--spacing-xl);">
+      <div class="form-group">
+        <label for="gender" class="form-label">성별</label>
+        <select id="gender" name="gender" class="form-control" required>
+          <option value="">선택하세요</option>
+          <option value="M">남자</option>
+          <option value="F">여자</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="year" class="form-label">생년 (년)</label>
+        <input 
+          type="number" 
+          id="year" 
+          name="year" 
+          class="form-control" 
+          placeholder="예: 2001"
+          min="1900"
+          max="2099"
+          required
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="month" class="form-label">월</label>
+        <input 
+          type="number" 
+          id="month" 
+          name="month" 
+          class="form-control" 
+          placeholder="예: 3"
+          min="1"
+          max="12"
+          required
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="day" class="form-label">일</label>
+        <input 
+          type="number" 
+          id="day" 
+          name="day" 
+          class="form-control" 
+          placeholder="예: 2"
+          min="1"
+          max="31"
+          required
+        >
+      </div>
+
+        <button type="submit" class="btn btn-primary btn-block" id="submitBtn" style="height: 48px; font-size: 16px; margin-top: var(--spacing-md);">
+          ✨ 분석하기
+        </button>
+      </form>
+
+      <!-- 새로운 분석 결과 표시 -->
+      <div id="resultContainer" class="result-container hidden" style="padding: var(--spacing-xl);">
+        <div class="result-card">
+          <h2 class="result-title">✨ 분석 결과</h2>
+          <div id="traitsList" class="traits-list">
+            <!-- 결과가 여기에 표시됩니다 -->
+          </div>
+        </div>
+      </div>
+
+      <div id="loadingSpinner" class="loading-spinner hidden" style="text-align: center; padding: var(--spacing-2xl);">
+        <div class="loading" style="margin: 0 auto var(--spacing-md);"></div>
+        <p class="loading-text">분석 중입니다. 잠시만 기다려주세요...</p>
+      </div>
+
+      <div id="errorMessage" class="alert alert-danger" style="display: none; margin: var(--spacing-xl);"></div>
+    </div>
+  </div>
+</div>
+
+<style>
+.analysis-container {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.analysis-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin-bottom: var(--spacing-sm);
+}
+
+.analysis-subtitle {
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-xl);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.6;
+}
+
+.result-container {
+  animation: slideUp 0.5s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.result-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin-bottom: var(--spacing-lg);
+}
+
+.traits-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--spacing-md);
+}
+
+.trait-item {
+  padding: var(--spacing-md);
+  background: linear-gradient(135deg, rgba(106, 90, 224, 0.1), rgba(139, 124, 246, 0.1));
+  border: 1px solid rgba(106, 90, 224, 0.3);
+  border-radius: var(--border-radius);
+  text-align: center;
+  font-weight: 600;
+  color: var(--text-primary);
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.trait-item:hover {
+  background: linear-gradient(135deg, rgba(106, 90, 224, 0.2), rgba(139, 124, 246, 0.2));
+  border-color: var(--primary-color);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.loading-text {
+  margin-top: var(--spacing-md);
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* 결과 표시용 CSS 클래스 */
+.result-container.hidden {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+}
+
+.result-container.visible {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* 로딩 스피너 표시 제어 */
+.loading-spinner.hidden {
+  display: none !important;
+}
+
+.loading-spinner.visible {
+  display: block !important;
+}
+</style>
+
+<script>
+let isSubmitting = false;
+
+document.getElementById('analysisForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+
+  // 이미 요청 중이면 무시
+  if (isSubmitting) {
+    console.log('이미 요청 중입니다.');
+    return;
+  }
+
+  const gender = document.getElementById('gender').value;
+  const year = document.getElementById('year').value;
+  const month = document.getElementById('month').value;
+  const day = document.getElementById('day').value;
+
+  if (!gender || !year || !month || !day) {
+    showError('모든 필드를 입력해주세요.');
+    return;
+  }
+
+  // 로딩 표시
+  isSubmitting = true;
+  const submitBtn = document.getElementById('submitBtn');
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '⏳ 분석 중...';
+  showLoading(true);
+  hideError();
+  console.log('✓ 로딩 시작');
+
+  // 간단하게 페이지 이동으로 처리
+  console.log('✓ 폼 제출 시작:', { gender, year, month, day });
+
+  try {
+    // 페이지 이동 (동기적으로)
+    const url = `/analysis/result?gender=${encodeURIComponent(gender)}&year=${encodeURIComponent(year)}&month=${encodeURIComponent(month)}&day=${encodeURIComponent(day)}`;
+    console.log('이동할 URL:', url);
+    window.location.href = url;
+  } catch (error) {
+    console.error('페이지 이동 오류:', error);
+    showError('페이지 이동 중 오류가 발생했습니다.');
+    showLoading(false);
+    isSubmitting = false;
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = '✨ 분석하기';
+  }
+});
+
+function showLoading(show) {
+  const spinner = document.getElementById('loadingSpinner');
+  if (spinner) {
+    spinner.style.display = show ? 'block' : 'none';
+  }
+}
+
+function showError(message) {
+  const errorDiv = document.getElementById('errorMessage');
+  if (errorDiv) {
+    errorDiv.textContent = message;
+    errorDiv.style.display = 'block';
+  }
+}
+
+function hideError() {
+  const errorDiv = document.getElementById('errorMessage');
+  if (errorDiv) {
+    errorDiv.style.display = 'none';
+  }
+}
+</script>
+
+<%- include('../layout/footer') %>
+

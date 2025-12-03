@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fortune For You - 사주 기반 소개팅 플랫폼</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Landing Page Specific Styles */
+    body.landing-page {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    .landing-page-wrapper {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #3d4a7a 0%, #4a2d5c 25%, #5a3a6b 50%, #2d4a6b 75%, #1a3a5a 100%);
+      background-size: 400% 400%;
+      animation: gradientShift 15s ease infinite;
+      padding: 20px;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .landing-page-wrapper::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(2px);
+    }
+
+    .landing-brand {
+      position: absolute;
+      top: 48px;
+      left: 64px;
+      z-index: 10;
+      color: #FFFFFF;
+    }
+
+    .landing-brand-text {
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: 4px;
+      line-height: 1.2;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .landing-brand-text .line1 {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .landing-brand-text .line2 {
+      display: block;
+    }
+
+    .landing-card {
+      position: relative;
+      z-index: 5;
+      width: 700px;
+      max-width: 90%;
+      max-height: calc(100vh - 40px);
+      background: #FFFFFF;
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      margin: 0 auto;
+      overflow-y: auto;
+    }
+
+    .landing-header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .landing-logo-icon {
+      width: 45px;
+      height: 45px;
+      background: linear-gradient(135deg, #6A5AE0 0%, #8B7CF6 100%);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      color: #FFFFFF;
+      margin: 0 auto 12px;
+    }
+
+    .landing-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: #111827;
+      margin: 0 0 8px 0;
+      line-height: 1.3;
+    }
+
+    .landing-subtitle {
+      font-size: 14px;
+      color: #6B7280;
+      margin: 0 0 12px 0;
+      line-height: 1.4;
+    }
+
+    .landing-question {
+      font-size: 18px;
+      font-weight: 600;
+      color: #6A5AE0;
+      margin: 0 0 16px 0;
+      text-align: center;
+    }
+
+    .landing-features {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .landing-feature {
+      text-align: center;
+      padding: 12px;
+      background: #F9FAFB;
+      border-radius: 10px;
+      transition: var(--transition);
+    }
+
+    .landing-feature:hover {
+      background: #F3F4F6;
+      transform: translateY(-4px);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    }
+
+    .landing-feature-icon {
+      font-size: 28px;
+      margin-bottom: 6px;
+    }
+
+    .landing-feature-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #111827;
+      margin: 0 0 4px 0;
+    }
+
+    .landing-feature-desc {
+      font-size: 11px;
+      color: #6B7280;
+      line-height: 1.3;
+      margin: 0;
+    }
+
+    .landing-cta {
+      text-align: center;
+      margin-top: 16px;
+    }
+
+    .landing-cta-buttons {
+      display: flex;
+      gap: 0;
+      justify-content: center;
+      margin-bottom: 0;
+    }
+
+    .landing-btn {
+      padding: 14px 32px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      text-decoration: none;
+      display: inline-block;
+      font-family: inherit;
+      border: none;
+    }
+
+    .landing-btn-primary {
+      background: linear-gradient(135deg, #1E3A8A 0%, #4C1D95 100%);
+      color: #FFFFFF;
+    }
+
+    .landing-btn-primary:hover {
+      background: linear-gradient(135deg, #2563EB 0%, #5B21B6 100%);
+      transform: scale(1.05);
+      box-shadow: 0 8px 20px rgba(30, 58, 138, 0.3);
+    }
+
+    .landing-btn-outline {
+      background: transparent;
+      color: #6A5AE0;
+      border: 2px solid #6A5AE0;
+    }
+
+    .landing-btn-outline:hover {
+      background: #6A5AE0;
+      color: #FFFFFF;
+      transform: scale(1.05);
+    }
+
+    .landing-footer {
+      text-align: center;
+      margin-top: 16px;
+      font-size: 11px;
+      color: #9CA3AF;
+    }
+
+    @media (max-width: 768px) {
+      .landing-page-wrapper {
+        padding: 12px;
+      }
+
+      .landing-brand {
+        top: 16px;
+        left: 16px;
+      }
+
+      .landing-brand-text {
+        font-size: 20px;
+        letter-spacing: 2px;
+      }
+
+      .landing-card {
+        width: 95%;
+        padding: 24px 16px;
+        margin: 50px auto 20px;
+      }
+
+      .landing-logo-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 24px;
+        margin-bottom: 12px;
+      }
+
+      .landing-title {
+        font-size: 22px;
+        margin-bottom: 8px;
+      }
+
+      .landing-subtitle {
+        font-size: 14px;
+        margin-bottom: 16px;
+      }
+
+      .landing-question {
+        font-size: 18px;
+        margin-bottom: 20px;
+      }
+
+      .landing-features {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin-bottom: 20px;
+      }
+
+      .landing-feature {
+        padding: 14px;
+      }
+
+      .landing-feature-icon {
+        font-size: 28px;
+        margin-bottom: 6px;
+      }
+
+      .landing-feature-title {
+        font-size: 13px;
+      }
+
+      .landing-feature-desc {
+        font-size: 11px;
+      }
+
+      .landing-cta-buttons {
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+
+      .landing-btn {
+        width: 100%;
+        padding: 14px 20px;
+      }
+
+      .landing-info-box {
+        padding: 16px;
+        margin-top: 16px;
+      }
+
+      .landing-info-box h3 {
+        font-size: 13px;
+        margin-bottom: 10px;
+      }
+
+      .landing-info-box li {
+        font-size: 11px;
+        margin-bottom: 6px;
+      }
+
+      .landing-footer {
+        margin-top: 16px;
+        font-size: 10px;
+      }
+    }
+  </style>
+</head>
+<body class="landing-page">
+  <div class="landing-page-wrapper">
+    <!-- 왼쪽 상단 브랜드 -->
+    <div class="landing-brand">
+      <div class="landing-brand-text">
+        <span class="line1">FORTUNE</span>
+        <span class="line2">FOR YOU</span>
+      </div>
+    </div>
+
+    <!-- 중앙 랜딩 카드 -->
+    <div class="landing-card">
+      <!-- 헤더 -->
+      <div class="landing-header">
+        <div class="landing-logo-icon">💜</div>
+        <h1 class="landing-title">Fortune For You</h1>
+        <p class="landing-subtitle">
+          사주 기반 궁합 분석과 소셜 플랫폼을 한 곳에서!<br>
+          나와 잘 맞는 인연을 찾아보세요.
+        </p>
+        <p class="landing-question">당신은 운명을 믿으시나요? ✨</p>
+      </div>
+
+      <!-- 주요 기능 소개 -->
+      <div class="landing-features">
+        <div class="landing-feature">
+          <div class="landing-feature-icon">🔮</div>
+          <h3 class="landing-feature-title">사주 기반 궁합 분석</h3>
+          <p class="landing-feature-desc">
+            정확한 사주 정보를 바탕으로<br>
+            과학적인 궁합 점수를 계산합니다
+          </p>
+        </div>
+
+        <div class="landing-feature">
+          <div class="landing-feature-icon">💕</div>
+          <h3 class="landing-feature-title">맞춤 추천 시스템</h3>
+          <p class="landing-feature-desc">
+            나와 가장 잘 맞는<br>
+            상위 3명을 추천해드립니다
+          </p>
+        </div>
+
+        <div class="landing-feature">
+          <div class="landing-feature-icon">💬</div>
+          <h3 class="landing-feature-title">1:1 실시간 채팅</h3>
+          <p class="landing-feature-desc">
+            마음에 드는 상대와<br>
+            안전하게 대화를 나눌 수 있습니다
+          </p>
+        </div>
+
+        <div class="landing-feature">
+          <div class="landing-feature-icon">👥</div>
+          <h3 class="landing-feature-title">활발한 커뮤니티</h3>
+          <p class="landing-feature-desc">
+            다양한 주제로<br>
+            소통하고 정보를 공유하세요
+          </p>
+        </div>
+      </div>
+
+      <!-- CTA 버튼 -->
+      <div class="landing-cta">
+        <div class="landing-cta-buttons">
+          <a href="/auth/login" class="landing-btn landing-btn-primary">지금 시작하기</a>
+        </div>
+      </div>
+
+      <!-- 하단 푸터 -->
+      <div class="landing-footer">
+        © Fortune For You
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+

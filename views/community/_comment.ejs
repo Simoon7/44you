@@ -1,0 +1,107 @@
+<% 
+  const marginLeft = depth > 0 ? (depth * 24) + 'px' : '0';
+  const paddingLeft = depth > 0 ? 'var(--spacing-md)' : 'var(--spacing-xl)';
+  const borderLeft = depth > 0 ? '2px solid #E5E7EB' : 'none';
+%>
+<div style="padding: var(--spacing-md) <%= paddingLeft %>; border-bottom: 1px solid #F3F4F6; margin-left: <%= marginLeft %>; border-left: <%= borderLeft %>; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#F9FAFB'" onmouseout="this.style.backgroundColor='transparent'">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+      <strong style="color: var(--text-primary); font-size: 14px; font-weight: 600;">
+        <%= comment.commentAuthor?.username || '알 수 없음' %>
+      </strong>
+      <span style="color: var(--text-secondary); font-size: 12px;">
+        <%= comment.createdAt?.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' }) %>
+      </span>
+      <% if (user && user.id !== comment.userId) { %>
+        <div class="comment-user-menu-container" style="position: relative; display: inline-block;">
+          <button 
+            class="ellipsis-btn" 
+            onclick="toggleCommentUserMenu(<%= comment.userId %>, '<%= (comment.commentAuthor?.username || '알 수 없음').replace(/'/g, "\\'") %>', <%= comment.id %>)"
+            style="background: none; border: none; cursor: pointer; padding: 4px; font-size: 14px; color: var(--text-secondary); line-height: 1; transition: color 0.2s;"
+            title="더보기"
+            onmouseover="this.style.color='var(--primary-color)'"
+            onmouseout="this.style.color='var(--text-secondary)'"
+          >
+            ⋮
+          </button>
+          <div id="comment-user-menu-<%= comment.userId %>-<%= comment.id %>" class="user-menu" style="display: none; position: absolute; left: 0; top: 100%; background: white; border: 1px solid #ddd; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1000; min-width: 140px; margin-top: 4px; overflow: hidden;">
+            <a href="/chat/list?user=<%= comment.userId %>" style="width: 100%; padding: 10px 14px; border: none; background: none; text-align: left; cursor: pointer; border-bottom: 1px solid #eee; transition: background 0.2s; display: block; text-decoration: none; color: var(--text-primary); font-size: 13px;" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='white'">
+              💬 채팅하기
+            </a>
+            <button onclick="blockUser(<%= comment.userId %>, '<%= (comment.commentAuthor?.username || '알 수 없음').replace(/'/g, "\\'") %>')" style="width: 100%; padding: 10px 14px; border: none; background: none; text-align: left; cursor: pointer; transition: background 0.2s; font-size: 13px; color: var(--text-primary);" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='white'">
+              🚫 차단하기
+            </button>
+          </div>
+        </div>
+      <% } %>
+    </div>
+    <div style="display: flex; gap: 8px; align-items: center;">
+      <% if (user && user.id === comment.userId) { %>
+        <form method="POST" action="/community/<%= post.id %>/comment/<%= comment.id %>/delete" style="display: inline; margin: 0;">
+          <button type="submit" style="background: none; border: none; color: #ef4444; font-size: 12px; cursor: pointer; padding: 4px 8px; border-radius: 4px; transition: background 0.2s;" onclick="return confirm('댓글을 삭제하시겠습니까?');" onmouseover="this.style.background='#FEE2E2'" onmouseout="this.style.background='transparent'">
+            삭제
+          </button>
+        </form>
+      <% } %>
+    </div>
+  </div>
+  
+  <div style="color: var(--text-primary); line-height: 1.6; white-space: pre-wrap; word-break: break-word; font-size: 14px; margin-bottom: 8px;">
+    <%= comment.content %>
+  </div>
+
+  <!-- 답글 버튼 -->
+  <% if (user && depth === 0) { %>
+    <div id="reply-btn-container-<%= comment.id %>" style="display: flex; align-items: center; gap: 12px; margin-top: 8px;">
+      <button 
+        type="button"
+        onclick="toggleReplyForm(<%= comment.id %>)"
+        style="background: none; border: none; color: var(--primary-color); font-size: 13px; font-weight: 500; cursor: pointer; padding: 4px 8px; border-radius: 4px; transition: all 0.2s;"
+        onmouseover="this.style.backgroundColor='#F3F4F6'; this.style.color='var(--primary-color)'"
+        onmouseout="this.style.backgroundColor='transparent'; this.style.color='var(--primary-color)'"
+      >
+        답글달기
+      </button>
+    </div>
+  <% } %>
+
+  <!-- 대댓글 작성 폼 (숨김) -->
+  <% if (user) { %>
+    <div id="reply-form-<%= comment.id %>" style="display: none; margin-top: 12px; padding-top: 12px; border-top: 1px solid #F3F4F6;">
+      <form method="POST" action="/community/<%= post.id %>/comment" style="display: flex; gap: 8px; align-items: flex-start;">
+        <input type="hidden" name="postId" value="<%= post.id %>">
+        <input type="hidden" name="parentId" value="<%= comment.id %>">
+        <textarea 
+          name="content" 
+          class="form-control" 
+          placeholder="답글을 입력하세요..."
+          rows="2"
+          required
+          style="flex: 1; padding: 8px 12px; font-size: 13px; line-height: 1.5; border-radius: 6px; border: 1px solid var(--border-color); resize: none;"
+        ></textarea>
+        <div style="display: flex; gap: 6px;">
+          <button 
+            type="button"
+            onclick="toggleReplyForm(<%= comment.id %>)"
+            style="background: none; border: 1px solid var(--border-color); color: var(--text-secondary); font-size: 13px; padding: 8px 14px; border-radius: 6px; cursor: pointer; transition: all 0.2s;"
+            onmouseover="this.style.borderColor='var(--text-secondary)'; this.style.color='var(--text-primary)'"
+            onmouseout="this.style.borderColor='var(--border-color)'; this.style.color='var(--text-secondary)'"
+          >
+            취소
+          </button>
+          <button type="submit" style="background: var(--primary-color); border: none; color: white; font-size: 13px; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: 500; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+            작성
+          </button>
+        </div>
+      </form>
+    </div>
+  <% } %>
+
+  <!-- 대댓글 목록 (재귀적으로 렌더링) -->
+  <% if (comment.replies && comment.replies.length > 0) { %>
+    <% comment.replies.forEach(reply => { %>
+      <%- include('_comment', { comment: reply, depth: depth + 1, post: post, user: user }); %>
+    <% }); %>
+  <% } %>
+</div>
+

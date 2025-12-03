@@ -1,0 +1,72 @@
+<%- include('../layout/header') %>
+
+<style>
+  /* Community Write Page with Gradient Background */
+  body {
+    /* 어두운 그라데이션 배경은 공통 CSS에서 처리 */
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* body::before는 공통 CSS의 별 레이어로 사용됨 */
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--spacing-xl) var(--spacing-xl);
+  }
+</style>
+
+<div class="container">
+<div class="card" style="max-width: 800px; margin: 0 auto;">
+  <div class="card-header">
+    <h2>✍️ 새 글 작성</h2>
+  </div>
+
+  <% if (locals.error) { %>
+    <div class="alert alert-danger">
+      <%= error %>
+    </div>
+  <% } %>
+
+  <form method="POST" action="/community/write" style="padding: var(--spacing-xl);">
+    <div class="form-group">
+      <label for="title" class="form-label">제목</label>
+      <input 
+        type="text" 
+        id="title" 
+        name="title" 
+        class="form-control" 
+        placeholder="게시글의 제목을 입력하세요"
+        required
+      >
+    </div>
+
+    <div class="form-group">
+      <label for="content" class="form-label">내용</label>
+      <textarea 
+        id="content" 
+        name="content" 
+        class="form-control" 
+        placeholder="게시글의 내용을 입력하세요"
+        rows="10"
+        required
+      ></textarea>
+    </div>
+
+    <div class="btn-group">
+      <button type="submit" class="btn btn-primary">
+        작성 완료
+      </button>
+      <a href="/community/list" class="btn btn-outline">
+        취소
+      </a>
+    </div>
+  </form>
+</div>
+</div>
+
+<%- include('../layout/footer') %>

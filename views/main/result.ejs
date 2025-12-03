@@ -1,0 +1,243 @@
+<%- include('../layout/header') %>
+
+<style>
+  /* Analysis Result Page with Gradient Background */
+  body {
+    /* 어두운 그라데이션 배경은 공통 CSS에서 처리 */
+    margin: 0;
+    padding: 0;
+  }
+
+  /* body::before는 공통 CSS의 별 레이어로 사용됨 */
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--spacing-xl) var(--spacing-xl);
+  }
+</style>
+
+<div class="container">
+  <div class="result-page">
+    <% if (traits && traits.length > 0) { %>
+      <div class="card mb-4">
+        <div class="card-header" style="text-align: center; border: none; padding: var(--spacing-xl) var(--spacing-xl) var(--spacing-lg); border-bottom: 1px solid var(--border-color);">
+          <h1 class="result-title" style="font-size: 28px; font-weight: 700; color: var(--text-primary); margin: 0 0 var(--spacing-sm) 0;">✨ 성향 분석 결과</h1>
+          <p style="color: var(--text-secondary); font-size: 16px; margin: 0;">당신의 성향을 분석했습니다</p>
+        </div>
+        <div style="padding: var(--spacing-xl);">
+        <div class="traits-grid">
+          <% traits.forEach(trait => { %>
+            <div class="trait-item">
+              <div class="trait-name"><%= trait %></div>
+              <div class="trait-description" data-trait="<%= trait %>">
+                설명을 불러오는 중...
+              </div>
+            </div>
+          <% }); %>
+        </div>
+        </div>
+      </div>
+
+      <div class="action-buttons" style="display: flex; gap: var(--spacing-md); justify-content: center; margin-top: var(--spacing-2xl);">
+        <a href="/analysis" class="btn btn-primary" style="font-size: 15px; padding: 10px 24px; border-radius: 8px; font-weight: 600;">다시 분석하기</a>
+        <a href="/" class="btn btn-primary" style="font-size: 15px; padding: 10px 24px; border-radius: 8px; font-weight: 600;">홈으로</a>
+      </div>
+    <% } else { %>
+      <div class="card">
+        <div class="card-body" style="text-align: center; padding: var(--spacing-3xl);">
+          <div class="empty-state-icon">⚠️</div>
+          <h2 class="empty-state-title">분석 실패</h2>
+          <p class="empty-state-text">성향 분석 결과를 불러올 수 없습니다.</p>
+          <a href="/analysis" class="btn btn-primary" style="font-size: 15px; padding: 10px 24px; border-radius: 8px; font-weight: 600;">다시 시도</a>
+        </div>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<style>
+.result-page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.result-title {
+  text-align: center;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.result-card {
+  background: var(--bg-card);
+  padding: var(--spacing-2xl);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  margin-bottom: var(--spacing-2xl);
+}
+
+.result-subtitle {
+  text-align: center;
+  font-size: 1.5rem;
+  color: #333;
+  margin-bottom: 2rem;
+}
+
+.traits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.trait-item {
+  background: linear-gradient(135deg, rgba(106, 90, 224, 0.08), rgba(139, 124, 246, 0.08));
+  border: 2px solid rgba(106, 90, 224, 0.25);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-xl) var(--spacing-lg);
+  text-align: center;
+  transition: var(--transition-slow);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  box-shadow: var(--shadow);
+}
+
+.trait-name {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #1a202c;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid rgba(99, 102, 241, 0.3);
+  width: 100%;
+}
+
+.trait-description {
+  font-size: 1rem;
+  color: #2d3748;
+  line-height: 1.9;
+  text-align: left;
+  width: 100%;
+  padding: 1.25rem 0.5rem;
+  letter-spacing: 0.01em;
+  word-spacing: 0.05em;
+}
+
+.trait-description .sentence {
+  margin-bottom: 0.75rem;
+  padding-left: 0.5rem;
+  position: relative;
+}
+
+.trait-description .sentence:last-child {
+  margin-bottom: 0;
+}
+
+.trait-description .sentence::before {
+  content: '•';
+  position: absolute;
+  left: -0.5rem;
+  color: rgba(99, 102, 241, 0.6);
+  font-weight: bold;
+}
+
+.trait-item:hover {
+  background: linear-gradient(135deg, rgba(106, 90, 224, 0.2), rgba(139, 124, 246, 0.2));
+  border-color: var(--primary-color);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+@media (max-width: 768px) {
+  .result-page {
+    padding: 1rem;
+  }
+
+  .result-title {
+    font-size: 2rem;
+  }
+
+  .traits-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .trait-item {
+    padding: 1rem;
+  }
+
+  .trait-name {
+    font-size: 1.1rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+  }
+
+  .trait-description {
+    font-size: 0.95rem;
+    line-height: 1.8;
+    padding: 1rem 0.25rem;
+  }
+
+  .trait-description .sentence {
+    margin-bottom: 0.6rem;
+    padding-left: 0.4rem;
+  }
+
+  .trait-description .sentence::before {
+    left: -0.4rem;
+  }
+
+  .btn {
+    display: block;
+    margin: 0.5rem 0;
+    width: 100%;
+  }
+}
+</style>
+
+<!-- 성향 설명 스크립트 -->
+<script src="/js/traitDescriptions.js"></script>
+<script>
+  // 페이지 로드 시 성향 설명 표시
+  document.addEventListener('DOMContentLoaded', function() {
+    const traitDescriptions = document.querySelectorAll('.trait-description');
+    
+    traitDescriptions.forEach(descElement => {
+      const trait = descElement.getAttribute('data-trait');
+      const description = getTraitDescription(trait);
+      
+      if (description && description !== "성향에 대한 설명이 없습니다.") {
+        // 온점(.) 기준으로 문장 분리
+        const sentences = description.split('.').filter(s => s.trim().length > 0);
+        
+        // 기존 내용 비우기
+        descElement.innerHTML = '';
+        
+        // 각 문장을 별도의 줄로 표시
+        sentences.forEach((sentence, index) => {
+          const sentenceDiv = document.createElement('div');
+          sentenceDiv.className = 'sentence';
+          sentenceDiv.textContent = sentence.trim() + (index < sentences.length - 1 ? '.' : '');
+          descElement.appendChild(sentenceDiv);
+        });
+        
+        descElement.style.color = '#2d3748';
+        descElement.style.fontWeight = '400';
+      } else {
+        descElement.textContent = "성향에 대한 설명이 없습니다.";
+        descElement.style.color = '#999';
+        descElement.style.fontStyle = 'italic';
+      }
+    });
+  });
+</script>
+
+<%- include('../layout/footer') %>

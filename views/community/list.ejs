@@ -1,0 +1,210 @@
+<%- include('../layout/header') %>
+
+<style>
+  /* Community Page with Gradient Background */
+  body {
+    /* 어두운 그라데이션 배경은 공통 CSS에서 처리 */
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* body::before는 공통 CSS의 별 레이어로 사용됨 */
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--spacing-xl) var(--spacing-xl);
+  }
+
+  .community-table {
+    background: white;
+    border-radius: var(--border-radius);
+  }
+
+  .table-row:hover {
+    background-color: #F9FAFB;
+  }
+
+  .table-row td a {
+    word-break: break-word;
+  }
+
+  @media (max-width: 768px) {
+    .community-table {
+      font-size: 12px;
+    }
+    
+    .community-table th,
+    .community-table td {
+      padding: var(--spacing-sm) !important;
+    }
+    
+    .community-table th:nth-child(3),
+    .community-table td:nth-child(3),
+    .community-table th:nth-child(4),
+    .community-table td:nth-child(4) {
+      display: none;
+    }
+  }
+</style>
+
+<div class="container">
+<div class="card mb-4">
+  <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--spacing-md);">
+    <div>
+      <h2 style="margin: 0;">📰 커뮤니티</h2>
+      <p style="margin: 0.5rem 0 0 0; color: var(--text-secondary); font-size: 14px;">
+        다른 사용자들과 소통하고 정보를 공유해보세요
+      </p>
+    </div>
+    <div style="display: flex; gap: var(--spacing-sm); align-items: center; flex-wrap: wrap;">
+      <form action="/community" method="GET" style="display: flex; gap: var(--spacing-xs);">
+        <input 
+          type="text" 
+          name="search" 
+          value="<%= typeof searchQuery !== 'undefined' ? (searchQuery || '') : '' %>"
+          placeholder="Search" 
+          class="form-control"
+          style="width: 200px; height: 36px; font-size: 14px; padding: 0 var(--spacing-sm); border-radius: 6px;"
+        >
+        <button type="submit" class="btn btn-primary" style="white-space: nowrap; height: 36px; padding: 0 var(--spacing-md); min-width: 36px; border-radius: 6px;">
+          🔍
+        </button>
+        <% if (typeof searchQuery !== 'undefined' && searchQuery) { %>
+          <a href="/community" class="btn btn-outline" style="white-space: nowrap; height: 36px; padding: 0 var(--spacing-md); border-radius: 6px; font-size: 14px;">
+            취소
+          </a>
+        <% } %>
+      </form>
+      <% if (locals.user) { %>
+        <a href="/community/write" class="btn btn-primary" style="white-space: nowrap; height: 36px; padding: 0 var(--spacing-lg); font-weight: 600; font-size: 14px; border-radius: 6px;">
+          글쓰기
+        </a>
+      <% } %>
+    </div>
+  </div>
+</div>
+
+<% if (locals.error) { %>
+  <div class="alert alert-danger">
+    <%= error %>
+  </div>
+<% } %>
+
+<% if (locals.success) { %>
+  <div class="alert alert-success">
+    <%= success %>
+  </div>
+<% } %>
+
+<% if (typeof searchQuery !== 'undefined' && searchQuery && posts && posts.length > 0) { %>
+  <div class="card mb-4">
+    <div class="card-body" style="padding: var(--spacing-md);">
+      <p style="margin: 0; color: var(--text-secondary); font-size: 14px;">
+        "<strong><%= searchQuery %></strong>" 검색 결과: <strong><%= posts.length %></strong>개
+      </p>
+    </div>
+  </div>
+<% } %>
+
+<% if (posts && posts.length > 0) { %>
+  <div class="card mb-4">
+    <div class="card-body" style="padding: 0; overflow-x: auto;">
+      <table class="community-table" style="width: 100%; border-collapse: collapse;">
+        <thead>
+          <tr style="background-color: var(--bg-page); border-bottom: 2px solid var(--border-color);">
+            <th style="padding: var(--spacing-md); text-align: center; font-weight: 600; color: var(--text-primary); font-size: 14px; width: 60px;">No</th>
+            <th style="padding: var(--spacing-md); text-align: left; font-weight: 600; color: var(--text-primary); font-size: 14px;">제목</th>
+            <th style="padding: var(--spacing-md); text-align: center; font-weight: 600; color: var(--text-primary); font-size: 14px; width: 120px;">글쓴이</th>
+            <th style="padding: var(--spacing-md); text-align: center; font-weight: 600; color: var(--text-primary); font-size: 14px; width: 120px;">작성시간</th>
+            <th style="padding: var(--spacing-md); text-align: center; font-weight: 600; color: var(--text-primary); font-size: 14px; width: 80px;">조회수</th>
+            <th style="padding: var(--spacing-md); text-align: center; font-weight: 600; color: var(--text-primary); font-size: 14px; width: 80px;">댓글</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% posts.forEach((post, index) => { %>
+            <tr class="table-row" style="border-bottom: 1px solid var(--border-color); transition: background-color 0.2s; cursor: pointer;" onclick="window.location.href='/community/<%= post.id %>'">
+              <td style="padding: var(--spacing-md); text-align: center; color: var(--text-secondary); font-size: 14px;">
+                <%= posts.length - index %>
+              </td>
+              <td style="padding: var(--spacing-md); text-align: left;">
+                <a href="/community/<%= post.id %>" style="text-decoration: none; color: var(--text-primary); font-size: 14px; font-weight: 500; display: block; line-height: 1.5;" onmouseover="this.style.color='var(--primary-color)'" onmouseout="this.style.color='var(--text-primary)'">
+                  <%= post.title %>
+                </a>
+              </td>
+              <td style="padding: var(--spacing-md); text-align: center; color: var(--text-secondary); font-size: 14px;">
+                <%= post.author?.username || post.User?.username || '알 수 없음' %>
+              </td>
+              <td style="padding: var(--spacing-md); text-align: center; color: var(--text-secondary); font-size: 13px;">
+                <% 
+                  const createdAt = post.createdAt;
+                  const now = new Date();
+                  const diff = now - createdAt;
+                  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                  let timeStr = '';
+                  if (days === 0) {
+                    timeStr = '오늘';
+                  } else if (days === 1) {
+                    timeStr = '1일전';
+                  } else if (days < 7) {
+                    timeStr = days + '일전';
+                  } else {
+                    timeStr = createdAt.toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' });
+                  }
+                %>
+                <%= timeStr %>
+              </td>
+              <td style="padding: var(--spacing-md); text-align: center; color: var(--text-secondary); font-size: 14px;">
+                <%= post.views || 0 %>
+              </td>
+              <td style="padding: var(--spacing-md); text-align: center; color: var(--text-secondary); font-size: 14px;">
+                <%= post.comments?.length || 0 %>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+<% } else { %>
+  <div class="empty-state">
+    <div class="empty-state-icon">📭</div>
+    <div class="empty-state-title">
+      <% if (typeof searchQuery !== 'undefined' && searchQuery) { %>
+        검색 결과가 없습니다
+      <% } else { %>
+        게시글이 없습니다
+      <% } %>
+    </div>
+    <div class="empty-state-text">
+      <% if (typeof searchQuery !== 'undefined' && searchQuery) { %>
+        "<%= searchQuery %>"에 대한 검색 결과를 찾을 수 없습니다.<br>
+        다른 검색어로 시도해보세요.
+      <% } else if (locals.user) { %>
+        첫 번째 게시글을 작성해보세요!
+      <% } else { %>
+        로그인 후 게시글을 확인해보세요.
+      <% } %>
+    </div>
+    <% if (typeof searchQuery !== 'undefined' && searchQuery) { %>
+      <a href="/community" class="btn btn-primary">
+        전체 게시글 보기
+      </a>
+    <% } else if (locals.user) { %>
+      <a href="/community/write" class="btn btn-primary">
+        첫 글 작성하기
+      </a>
+    <% } else { %>
+      <a href="/auth/login" class="btn btn-primary">
+        로그인하기
+      </a>
+    <% } %>
+  </div>
+<% } %>
+
+</div>
+
+<%- include('../layout/footer') %>

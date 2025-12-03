@@ -1,0 +1,204 @@
+<%- include('../layout/header') %>
+
+<style>
+  /* Community Detail Page with Gradient Background */
+  body {
+    /* 어두운 그라데이션 배경은 공통 CSS에서 처리 */
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* body::before는 공통 CSS의 별 레이어로 사용됨 */
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--spacing-xl) var(--spacing-xl);
+  }
+</style>
+
+<div class="container">
+<% if (locals.error) { %>
+  <div class="alert alert-danger">
+    <%= error %>
+  </div>
+<% } %>
+
+<% if (locals.success) { %>
+  <div class="alert alert-success">
+    <%= success %>
+  </div>
+<% } %>
+
+<div class="card mb-4" style="max-width: 900px; margin: 0 auto;" data-post-author-id="<%= post.userId %>">
+  <!-- 게시글 헤더 -->
+  <div class="card-header" style="padding: var(--spacing-xl); border-bottom: 2px solid var(--border-color);">
+    <h1 style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin: 0 0 var(--spacing-lg) 0; line-height: 1.4;">
+      <%= post.title %>
+    </h1>
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--spacing-md);">
+      <div style="display: flex; align-items: center; gap: var(--spacing-md); flex-wrap: wrap;">
+        <div style="display: flex; align-items: center; gap: var(--spacing-xs);">
+          <span style="font-size: 16px;">👤</span>
+          <span style="font-weight: 600; color: var(--text-primary);"><%= post.author?.username || post.User?.username || '알 수 없음' %></span>
+        </div>
+        <div style="display: flex; align-items: center; gap: var(--spacing-xs); color: var(--text-secondary); font-size: 14px;">
+          <span>📅</span>
+          <span><%= post.createdAt?.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' }) %></span>
+        </div>
+        <div style="display: flex; align-items: center; gap: var(--spacing-xs); color: var(--text-secondary); font-size: 14px;">
+          <span>👁️</span>
+          <span><%= post.views || 0 %>회</span>
+        </div>
+      </div>
+      <% if (locals.user && user.id !== post.userId) { %>
+        <div class="post-user-menu-container" style="position: relative;">
+          <button 
+            class="ellipsis-btn" 
+            onclick="togglePostUserMenu(<%= post.userId %>, '<%= ((post.author?.username || post.User?.username) || '알 수 없음').replace(/'/g, "\\'") %>')"
+            style="background: var(--bg-page); border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; padding: 6px 12px; font-size: 18px; color: var(--text-secondary); line-height: 1; transition: all 0.2s;"
+            title="더보기"
+            onmouseover="this.style.background='#F3F4F6'; this.style.borderColor='var(--primary-color)'"
+            onmouseout="this.style.background='var(--bg-page)'; this.style.borderColor='var(--border-color)'"
+          >
+            ⋮
+          </button>
+          <div id="post-user-menu-<%= post.userId %>" class="user-menu" style="display: none; position: absolute; right: 0; top: 100%; background: white; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1000; min-width: 160px; margin-top: 8px; overflow: hidden;">
+            <a href="/chat/list?user=<%= post.userId %>" style="width: 100%; padding: 12px 16px; border: none; background: none; text-align: left; cursor: pointer; border-bottom: 1px solid #eee; transition: background 0.2s; display: block; text-decoration: none; color: var(--text-primary); font-size: 14px;" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='white'">
+              💬 채팅하기
+            </a>
+            <button onclick="blockUser(<%= post.userId %>, '<%= ((post.author?.username || post.User?.username) || '알 수 없음').replace(/'/g, "\\'") %>', <%= post.userId %>)" style="width: 100%; padding: 12px 16px; border: none; background: none; text-align: left; cursor: pointer; transition: background 0.2s; font-size: 14px; color: var(--text-primary);" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='white'">
+              🚫 차단하기
+            </button>
+          </div>
+        </div>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- 게시글 본문 -->
+  <div class="card-body" style="padding: var(--spacing-2xl);">
+    <div style="line-height: 1.8; color: var(--text-primary); white-space: pre-wrap; word-break: break-word; font-size: 16px; min-height: 100px;">
+      <%= post.content %>
+    </div>
+  </div>
+
+  <!-- 게시글 액션 버튼 -->
+  <% if (locals.user && user.id === post.userId) { %>
+    <div style="padding: var(--spacing-lg) var(--spacing-xl); background-color: var(--bg-page); border-top: 1px solid var(--border-color); display: flex; gap: var(--spacing-sm); justify-content: flex-end;">
+      <a href="/community/<%= post.id %>/edit" class="btn btn-outline" style="font-size: 14px; padding: 8px 20px;">
+        ✏️ 수정
+      </a>
+      <form method="POST" action="/community/<%= post.id %>/delete" style="display: inline;">
+        <button type="submit" class="btn btn-danger" style="font-size: 14px; padding: 8px 20px;" onclick="return confirm('정말 삭제하시겠습니까?');">
+          🗑️ 삭제
+        </button>
+      </form>
+    </div>
+  <% } %>
+</div>
+
+<!-- 댓글 섹션 -->
+<div class="card" style="max-width: 900px; margin: 0 auto;">
+  <div style="padding: var(--spacing-lg) var(--spacing-xl); border-bottom: 1px solid var(--border-color); background-color: var(--bg-page);">
+    <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: var(--text-primary);">
+      댓글 
+      <% 
+        function countComments(comments) {
+          let count = 0;
+          if (comments) {
+            comments.forEach(comment => {
+              count += 1;
+              if (comment.replies && comment.replies.length > 0) {
+                count += countComments(comment.replies);
+              }
+            });
+          }
+          return count;
+        }
+        const totalCommentCount = countComments(post.comments);
+      %>
+      <span style="color: var(--text-secondary); font-weight: 400;">(<%= totalCommentCount %>)</span>
+    </h3>
+  </div>
+
+  <!-- 댓글 목록 -->
+  <% if (post.comments && post.comments.length > 0) { %>
+    <div style="padding: 0;">
+      <% post.comments.forEach((comment, index) => { %>
+        <%- include('_comment', { comment: comment, depth: 0, post: post, user: user }); %>
+      <% }); %>
+    </div>
+  <% } else { %>
+    <div style="padding: var(--spacing-2xl); text-align: center; color: var(--text-secondary);">
+      <p style="margin: 0; font-size: 14px;">아직 댓글이 없습니다.</p>
+    </div>
+  <% } %>
+
+  <!-- 댓글 작성 (댓글 목록 아래) -->
+  <% if (locals.user) { %>
+    <div style="padding: var(--spacing-md) var(--spacing-xl); border-top: 1px solid var(--border-color); background-color: var(--bg-page);">
+      <form method="POST" action="/community/<%= post.id %>/comment" style="display: flex; gap: var(--spacing-sm); align-items: flex-start;">
+        <input type="hidden" name="postId" value="<%= post.id %>">
+        <textarea 
+          id="comment" 
+          name="content" 
+          class="form-control" 
+          placeholder="댓글을 입력하세요..."
+          rows="2"
+          style="flex: 1; padding: 10px 14px; font-size: 14px; line-height: 1.5; border-radius: 8px; border: 1px solid var(--border-color); resize: none;"
+          required
+        ></textarea>
+        <button type="submit" class="btn btn-primary" style="font-size: 14px; padding: 10px 20px; border-radius: 8px; font-weight: 500; white-space: nowrap; height: fit-content;">
+          작성
+        </button>
+      </form>
+    </div>
+  <% } else { %>
+    <div style="padding: var(--spacing-md) var(--spacing-xl); border-top: 1px solid var(--border-color); text-align: center; background-color: var(--bg-page);">
+      <p style="margin: 0; font-size: 14px; color: var(--text-secondary);">
+        댓글을 작성하려면 <a href="/auth/login" style="color: var(--primary-color); font-weight: 500; text-decoration: none;">로그인</a>해주세요.
+      </p>
+    </div>
+  <% } %>
+</div>
+
+<div style="text-align: center; margin: var(--spacing-2xl) 0;">
+  <a href="/community/list" class="btn btn-outline" style="font-size: 15px; padding: 10px 24px; border-radius: 8px; font-weight: 500;">
+    ← 목록으로 돌아가기
+  </a>
+</div>
+</div>
+
+<!-- 차단 기능 -->
+<script src="/js/blockReport.js"></script>
+
+<script>
+// 답글 폼 토글 함수
+function toggleReplyForm(commentId) {
+  const replyForm = document.getElementById(`reply-form-${commentId}`);
+  const replyBtnContainer = document.getElementById(`reply-btn-container-${commentId}`);
+  
+  if (replyForm && replyBtnContainer) {
+    // 현재 표시 상태 확인 (인라인 스타일 또는 계산된 스타일)
+    const formDisplay = replyForm.style.display || window.getComputedStyle(replyForm).display;
+    const isFormVisible = formDisplay !== 'none';
+    
+    if (isFormVisible) {
+      // 폼이 보이는 상태면 숨기고 버튼 보이기
+      replyForm.style.display = 'none';
+      replyBtnContainer.style.display = 'flex';
+    } else {
+      // 폼이 숨겨진 상태면 보이게 하고 버튼 숨기기
+      replyForm.style.display = 'block';
+      replyBtnContainer.style.display = 'none';
+    }
+  }
+}
+
+</script>
+
+<%- include('../layout/footer') %>
